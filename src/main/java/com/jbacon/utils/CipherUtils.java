@@ -6,8 +6,20 @@ import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.digests.SHA1Digest;
+import org.bouncycastle.crypto.digests.SHA224Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.digests.SHA384Digest;
+import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.digests.TigerDigest;
+import org.bouncycastle.crypto.digests.WhirlpoolDigest;
+import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.engines.AESFastEngine;
+import org.bouncycastle.crypto.engines.AESLightEngine;
+import org.bouncycastle.crypto.engines.BlowfishEngine;
+import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -39,14 +51,29 @@ public final class CipherUtils {
 
     public enum SymmetricCipher {
         // TODO - Implement more Ciphers.
-        AES();
+        AES_FAST(AESFastEngine.class), //
+        AES(AESEngine.class), //
+        AES_SLOW(AESLightEngine.class), //
+        BLOWFISH(BlowfishEngine.class), //
+        TWOFISH(TwofishEngine.class);
+
+        private final BlockCipher cipherEngine;
+
+        private SymmetricCipher(final Class<? extends BlockCipher> engineClass) {
+            try {
+                this.cipherEngine = engineClass.newInstance();
+            } catch (final InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         // TODO - Fix trailing zero bytes on decryption.
-        public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
-                throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+        public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
             validateInputs(mode, key, input);
 
-            final BufferedBlockCipher cipher = getCipher(mode, key);
+            final BufferedBlockCipher cipher = createCipher(mode, key);
 
             final byte[] output = new byte[cipher.getOutputSize(input.length)];
             final int outputLen = cipher.processBytes(input, 0, input.length, output, 0);
@@ -56,17 +83,8 @@ public final class CipherUtils {
             return output;
         }
 
-        private BufferedBlockCipher getCipher(final CipherMode mode, final byte[] key) {
-            switch (this) {
-            case AES:
-                return createCipher(new AESFastEngine(), mode, key);
-            default:
-                return null;
-            }
-        }
-
-        private BufferedBlockCipher createCipher(final BlockCipher engine, final CipherMode mode, final byte[] key) {
-            final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(engine);
+        private BufferedBlockCipher createCipher(final CipherMode mode, final byte[] key) {
+            final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
             final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
             cipher.init(CipherMode.ENCRYPT.equals(mode), new KeyParameter(key));
@@ -76,24 +94,33 @@ public final class CipherUtils {
     }
 
     public enum PasswordBasedCipher {
-        PBEWithMD5AndDES, //
-        PBEWithMD5AndRC2, //
-        PBEWithSHA1AndDES, //
-        PBEWithSHA1AndRC2, //
-        PBEWithSHAAnd2_KeyTripleDES_CBC, //
-        PBEWithSHAAnd3_KeyTripleDES_CBC, //
-        PBEWithSHAAnd128BitRC2_CBC, //
-        PBEWithSHAAnd40BitRC2_CBC, //
-        PBEWithSHAAnd128BitRC4, //
-        PBEWithSHAAnd40BitRC4, //
-        PBEWithSHAAndTwofish_CBC, //
-        PBEWithSHAAndIDEA_CBC;
+        PBE_SHA_AES_CBC(AESFastEngine.class, SHA1Digest.class), //
+        PBE_SHA224_AES_CBC(AESFastEngine.class, SHA224Digest.class), //
+        PBE_SHA256_AES_CBC(AESFastEngine.class, SHA256Digest.class), //
+        PBE_SHA384_AES_CBC(AESFastEngine.class, SHA384Digest.class), //
+        PBE_SHA512_AES_CBC(AESFastEngine.class, SHA512Digest.class), //
+        PBE_TIGER_AES_CBC(AESFastEngine.class, TigerDigest.class), //
+        PBE_WHIRLPOOL_AES_CBC(AESFastEngine.class, WhirlpoolDigest.class);
 
-        public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
-                throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+        // Digest => Symmetric Cipher => CBC
+        private final BlockCipher cipherEngine;
+        private final Digest digestEngine;
+
+        private PasswordBasedCipher(final Class<? extends BlockCipher> engineClass, final Class<? extends Digest> digestClass) {
+            try {
+                this.cipherEngine = engineClass.newInstance();
+                this.digestEngine = digestClass.newInstance();
+            } catch (final InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
             validateInputs(mode, key, input);
 
-            final BufferedBlockCipher cipher = getCipher(mode, key);
+            final BufferedBlockCipher cipher = createCipher(mode, key);
 
             final byte[] output = new byte[cipher.getOutputSize(input.length)];
             final int outputLen = cipher.processBytes(input, 0, input.length, output, 0);
@@ -103,39 +130,13 @@ public final class CipherUtils {
             return output;
         }
 
-        private BufferedBlockCipher getCipher(final CipherMode mode, final byte[] key) {
-            switch (this) {
-            case PBEWithMD5AndDES:
-                return createPBEWithMD5AndDESCiper();
-            case PBEWithMD5AndRC2:
-                return null;
-            case PBEWithSHA1AndDES:
-                return null;
-            case PBEWithSHA1AndRC2:
-                return null;
-            case PBEWithSHAAnd2_KeyTripleDES_CBC:
-                return null;
-            case PBEWithSHAAnd3_KeyTripleDES_CBC:
-                return null;
-            case PBEWithSHAAnd128BitRC2_CBC:
-                return null;
-            case PBEWithSHAAnd40BitRC2_CBC:
-                return null;
-            case PBEWithSHAAnd128BitRC4:
-                return null;
-            case PBEWithSHAAnd40BitRC4:
-                return null;
-            case PBEWithSHAAndTwofish_CBC:
-                return null;
-            case PBEWithSHAAndIDEA_CBC:
-                return null;
-            default:
-                return null;
-            }
-        }
+        private BufferedBlockCipher createCipher(final CipherMode mode, final byte[] key) {
+            final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
+            final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
-        private BufferedBlockCipher createPBEWithMD5AndDESCiper() {
-            return null;
+            cipher.init(CipherMode.ENCRYPT.equals(mode), new KeyParameter(key));
+
+            return cipher;
         }
     }
 
