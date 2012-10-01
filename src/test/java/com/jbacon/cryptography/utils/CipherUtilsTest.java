@@ -1,10 +1,12 @@
-package com.jbacon.utils;
+package com.jbacon.cryptography.utils;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+
+import com.jbacon.cryptography.utils.GenericCipherUtils;
 
 public class CipherUtilsTest {
 
@@ -13,13 +15,13 @@ public class CipherUtilsTest {
 
     @Test
     public void shouldConvertByteArrayToBase64EncodedString() {
-        final String base64Encoded = CipherUtils.bytesToBase64Encoded(BYTEARRAY_HELLOWORLD);
+        final String base64Encoded = GenericCipherUtils.bytesToBase64Encoded(BYTEARRAY_HELLOWORLD);
         assertThat(base64Encoded, is(equalTo(STRING_HELLOWORLD_AS_BASE64)));
     }
 
     @Test
     public void shouldConvertBase64EncodedStringToByteArray() {
-        final byte[] bytes = CipherUtils.base64EncodedToBytes(STRING_HELLOWORLD_AS_BASE64);
+        final byte[] bytes = GenericCipherUtils.base64EncodedToBytes(STRING_HELLOWORLD_AS_BASE64);
         assertThat(bytes, is(equalTo(BYTEARRAY_HELLOWORLD)));
     }
 

@@ -1,4 +1,4 @@
-package com.jbacon.utils;
+package com.jbacon.cryptography.utils;
 
 import static org.junit.Assert.fail;
 

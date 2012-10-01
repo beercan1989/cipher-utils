@@ -1,4 +1,4 @@
-package com.jbacon.utils;
+package com.jbacon.cryptography.utils;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

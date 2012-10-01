@@ -1,4 +1,4 @@
-package com.jbacon.utils;
+package com.jbacon.cryptography.utils;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -11,8 +11,9 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
 
-import com.jbacon.utils.CipherUtils.CipherMode;
-import com.jbacon.utils.CipherUtils.SymmetricCipher;
+import com.jbacon.cryptography.CipherMode;
+import com.jbacon.cryptography.utils.SymmetricCipherUtils;
+
 
 public class SymmetricCiphersTest {
 
@@ -25,7 +26,7 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToEncryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException {
-        final SymmetricCipher aesCipher = CipherUtils.SymmetricCipher.AES;
+        final SymmetricCipherUtils aesCipher = SymmetricCipherUtils.AES;
 
         final byte[] encrypted = aesCipher.doCipher(CipherMode.ENCRYPT, AES_KEY, TO_ENCRYPT);
 
@@ -35,7 +36,7 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToDencryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException, UnsupportedEncodingException {
-        final SymmetricCipher aesCipher = CipherUtils.SymmetricCipher.AES;
+        final SymmetricCipherUtils aesCipher = SymmetricCipherUtils.AES;
 
         final byte[] decrypted = aesCipher.doCipher(CipherMode.DECRYPT, AES_KEY, TO_DECRYPT);
 
