@@ -13,28 +13,43 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.digests.TigerDigest;
 import org.bouncycastle.crypto.digests.WhirlpoolDigest;
 import org.bouncycastle.crypto.engines.AESFastEngine;
+import org.bouncycastle.crypto.engines.BlowfishEngine;
+import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.bouncycastle.crypto.params.KeyParameter;
 
 import com.jbacon.cryptography.CipherMode;
-import com.jbacon.cryptography.CipherValidation;
 
 public enum PasswordBasedCipherUtils {
-    PBE_SHA_AES_CBC(AESFastEngine.class, SHA1Digest.class), //
-    PBE_SHA224_AES_CBC(AESFastEngine.class, SHA224Digest.class), //
-    PBE_SHA256_AES_CBC(AESFastEngine.class, SHA256Digest.class), //
-    PBE_SHA384_AES_CBC(AESFastEngine.class, SHA384Digest.class), //
-    PBE_SHA512_AES_CBC(AESFastEngine.class, SHA512Digest.class), //
-    PBE_TIGER_AES_CBC(AESFastEngine.class, TigerDigest.class), //
-    PBE_WHIRLPOOL_AES_CBC(AESFastEngine.class, WhirlpoolDigest.class);
+    PBE_SHA_AES_CBC(AESFastEngine.class, SHA1Digest.class, true), //
+    PBE_SHA224_AES_CBC(AESFastEngine.class, SHA224Digest.class, true), //
+    PBE_SHA256_AES_CBC(AESFastEngine.class, SHA256Digest.class, true), //
+    PBE_SHA384_AES_CBC(AESFastEngine.class, SHA384Digest.class, true), //
+    PBE_SHA512_AES_CBC(AESFastEngine.class, SHA512Digest.class, true), //
+    PBE_TIGER_AES_CBC(AESFastEngine.class, TigerDigest.class, true), //
+    PBE_WHIRLPOOL_AES_CBC(AESFastEngine.class, WhirlpoolDigest.class, true), //
+
+    PBE_SHA_BLOWFISH_CBC(BlowfishEngine.class, SHA1Digest.class, true), //
+    PBE_SHA224_BLOWFISH_CBC(BlowfishEngine.class, SHA224Digest.class, true), //
+    PBE_SHA256_BLOWFISH_CBC(BlowfishEngine.class, SHA256Digest.class, true), //
+    PBE_SHA384_BLOWFISH_CBC(BlowfishEngine.class, SHA384Digest.class, true), //
+    PBE_SHA512_BLOWFISH_CBC(BlowfishEngine.class, SHA512Digest.class, true), //
+    PBE_TIGER_BLOWFISH_CBC(BlowfishEngine.class, TigerDigest.class, true), //
+    PBE_WHIRLPOOL_BLOWFISH_CBC(BlowfishEngine.class, WhirlpoolDigest.class, true),
+
+    PBE_SHA_TWOFISH_ECB(TwofishEngine.class, SHA1Digest.class, false), //
+    PBE_SHA224_TWOFISH_ECB(TwofishEngine.class, SHA224Digest.class, false), //
+    PBE_SHA256_TWOFISH_ECB(TwofishEngine.class, SHA256Digest.class, false), //
+    PBE_SHA384_TWOFISH_ECB(TwofishEngine.class, SHA384Digest.class, false), //
+    PBE_SHA512_TWOFISH_ECB(TwofishEngine.class, SHA512Digest.class, false), //
+    PBE_TIGER_TWOFISH_ECB(TwofishEngine.class, TigerDigest.class, false), //
+    PBE_WHIRLPOOL_TWOFISH_ECB(TwofishEngine.class, WhirlpoolDigest.class, false);
 
     // Digest => Symmetric Cipher => CBC
     private final BlockCipher cipherEngine;
     private final Digest digestEngine;
 
-    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass,
-            final Class<? extends Digest> digestClass) {
+    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass, final Class<? extends Digest> digestClass, final boolean isCBC) {
         try {
             cipherEngine = engineClass.newInstance();
             digestEngine = digestClass.newInstance();
@@ -45,25 +60,17 @@ public enum PasswordBasedCipherUtils {
         }
     }
 
-    public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        CipherValidation.validateInputs(mode, key, input);
-
-        final BufferedBlockCipher cipher = createCipher(mode, key);
-
-        final byte[] output = new byte[cipher.getOutputSize(input.length)];
-        final int outputLen = cipher.processBytes(input, 0, input.length, output, 0);
-
-        cipher.doFinal(output, outputLen);
-
-        return output;
+    public final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+        // TODO
+        return null;
     }
 
-    private BufferedBlockCipher createCipher(final CipherMode mode, final byte[] key) {
+    private BufferedBlockCipher createCipher(final CipherMode mode, final char[] password) {
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
-        cipher.init(CipherMode.ENCRYPT.equals(mode), new KeyParameter(key));
+        // TODO
+        // cipher.init(CipherMode.ENCRYPT.equals(mode), new KeyParameter(key));
 
         return cipher;
     }
