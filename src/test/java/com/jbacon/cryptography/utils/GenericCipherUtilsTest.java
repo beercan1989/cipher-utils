@@ -6,9 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.jbacon.cryptography.utils.GenericCipherUtils;
-
-public class CipherUtilsTest {
+public class GenericCipherUtilsTest {
 
     private static final String STRING_HELLOWORLD_AS_BASE64 = "SGVsbG8gV29ybGQ=";
     private static final byte[] BYTEARRAY_HELLOWORLD = new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 };
@@ -25,4 +23,15 @@ public class CipherUtilsTest {
         assertThat(bytes, is(equalTo(BYTEARRAY_HELLOWORLD)));
     }
 
+    @Test
+    public void shouldHandleNullBase64StringToByteArray() {
+        final byte[] bytes = GenericCipherUtils.base64EncodedToBytes(null);
+        assertThat(bytes, is(equalTo(null)));
+    }
+
+    @Test
+    public void shouldHandleNullByteArrayToBase64String() {
+        final String base64Encoded = GenericCipherUtils.bytesToBase64Encoded(null);
+        assertThat(base64Encoded, is(equalTo(null)));
+    }
 }

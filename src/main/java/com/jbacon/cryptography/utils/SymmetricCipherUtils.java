@@ -2,6 +2,7 @@ package com.jbacon.cryptography.utils;
 
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -35,27 +36,28 @@ public enum SymmetricCipherUtils {
         }
     }
 
-    // TODO - Fix trailing zero bytes on decryption.
     public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
             throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         CipherValidation.validateInputs(mode, key, input);
-
-        final BufferedBlockCipher cipher = createCipher(mode, key);
-
-        final byte[] output = new byte[cipher.getOutputSize(input.length)];
-        final int outputLen = cipher.processBytes(input, 0, input.length, output, 0);
-
-        cipher.doFinal(output, outputLen);
-
-        return output;
+        final KeyParameter keyParameter = new KeyParameter(key);
+        return doCipher(mode, input, keyParameter);
     }
 
-    private BufferedBlockCipher createCipher(final CipherMode mode, final byte[] key) {
+    final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
-        cipher.init(CipherMode.ENCRYPT.equals(mode), new KeyParameter(key));
+        cipher.reset();
+        cipher.init(CipherMode.ENCRYPT.equals(mode), cipherParams);
 
-        return cipher;
+        final byte[] outputBuffer = new byte[cipher.getOutputSize(input.length)];
+        int length = cipher.processBytes(input, 0, input.length, outputBuffer, 0);
+        length += cipher.doFinal(outputBuffer, length);
+
+        final byte[] output = new byte[length];
+        System.arraycopy(outputBuffer, 0, output, 0, length);
+
+        return output;
     }
 }

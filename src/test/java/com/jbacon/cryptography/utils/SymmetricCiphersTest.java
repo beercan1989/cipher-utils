@@ -6,14 +6,11 @@ import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
 
 import com.jbacon.cryptography.CipherMode;
-import com.jbacon.cryptography.utils.SymmetricCipherUtils;
-
 
 public class SymmetricCiphersTest {
 
@@ -40,7 +37,7 @@ public class SymmetricCiphersTest {
 
         final byte[] decrypted = aesCipher.doCipher(CipherMode.DECRYPT, AES_KEY, TO_DECRYPT);
 
-        assertThat(decrypted, is(equalTo(ArrayUtils.addAll(TO_ENCRYPT, new byte[] { 0, 0, 0, 0, 0, 0 }))));
+        assertThat(decrypted, is(equalTo(TO_ENCRYPT)));
     }
 
 }
