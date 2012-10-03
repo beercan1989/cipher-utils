@@ -11,8 +11,9 @@ import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.ExtendedDigest;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA224Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -23,6 +24,7 @@ import org.bouncycastle.crypto.digests.WhirlpoolDigest;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.engines.BlowfishEngine;
 import org.bouncycastle.crypto.engines.TwofishEngine;
+import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -57,13 +59,16 @@ public enum PasswordBasedCipherUtils {
 
     // Digest => Symmetric Cipher => CBC / ECB
     private final BlockCipher cipherEngine;
-    private final Digest digestEngine;
+    private final ExtendedDigest digestEngine;
     private final boolean isCBC;
+    private final PKCS12ParametersGenerator paramGenerator;
 
-    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass, final Class<? extends Digest> digestClass, final boolean isCBC) {
+    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass, final Class<? extends ExtendedDigest> digestClass, final boolean isCBC) {
         try {
             cipherEngine = engineClass.newInstance();
             digestEngine = digestClass.newInstance();
+            paramGenerator = new PKCS12ParametersGenerator(digestEngine);
+
             this.isCBC = isCBC;
         } catch (final InstantiationException e) {
             throw new RuntimeException(e);
@@ -110,11 +115,12 @@ public enum PasswordBasedCipherUtils {
      * @throws IllegalStateException
      * @throws DataLengthException
      */
-    public byte[] test(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws NoSuchAlgorithmException,
+    public final byte[] test(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws NoSuchAlgorithmException,
             InvalidKeySpecException, DataLengthException, IllegalStateException, InvalidCipherTextException {
 
         final PBEKeySpec pbeKeySpecification = new PBEKeySpec(password, salt, 50, 256);
         final SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBEWithSHA256And256BitAES-CBC-BC");
+
         final SecretKeySpec secretKeySpecification = new SecretKeySpec(secretKeyFactory.generateSecret(pbeKeySpecification).getEncoded(), "AES");
         final byte[] generatedEncryptionKey = secretKeySpecification.getEncoded();
         final KeyParameter keyParam = new KeyParameter(generatedEncryptionKey);
@@ -123,5 +129,41 @@ public enum PasswordBasedCipherUtils {
         final byte[] output = SymmetricCipherUtils.AES_FAST.doCipher(CipherMode.ENCRYPT, input, cipherParams);
 
         return output;
+    }
+
+    public final byte[] test2(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final PBEKeySpec keySpec = new PBEKeySpec(password, salt, 50, 256);
+        // final CipherParameters cipherParams = makePBEParameters(pbeKeySpecification, password.length, iv.length);
+
+        // final SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBEWithSHA256And256BitAES-CBC-BC");
+        // final SecretKey generateSecret = secretKeyFactory.generateSecret(pbeKeySpecification);
+        // final SecretKeySpec secretKeySpecification = new SecretKeySpec(generateSecret.getEncoded(), "AES");
+        // final byte[] generatedEncryptionKey = secretKeySpecification.getEncoded();
+        // final KeyParameter keyParam = new KeyParameter(generatedEncryptionKey);
+
+        final KeyParameter keyParam = new KeyParameter(PBEParametersGenerator.PKCS12PasswordToBytes(keySpec.getPassword()));
+        final CipherParameters cipherParams = new ParametersWithIV(keyParam, iv);
+
+        final byte[] output = SymmetricCipherUtils.AES_FAST.doCipher(CipherMode.ENCRYPT, input, cipherParams);
+
+        return output;
+    }
+
+    private final CipherParameters makePBEParameters(final PBEKeySpec keySpec, final int keySize, final int ivSize) {
+        final byte[] key = PBEParametersGenerator.PKCS12PasswordToBytes(keySpec.getPassword());
+        try {
+            paramGenerator.init(key, keySpec.getSalt(), keySpec.getIterationCount());
+
+            if (ivSize != 0) {
+                return paramGenerator.generateDerivedParameters(keySize, ivSize);
+            } else {
+                return paramGenerator.generateDerivedParameters(keySize);
+            }
+        } finally {
+            for (int i = 0; i != key.length; i++) {
+                key[i] = 0;
+            }
+        }
     }
 }
