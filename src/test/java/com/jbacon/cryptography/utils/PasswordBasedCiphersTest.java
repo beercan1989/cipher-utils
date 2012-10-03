@@ -50,8 +50,11 @@ public class PasswordBasedCiphersTest {
         final byte[] toEncrypt = GenericCipherUtils.stringToByte("HelloWorld.");
 
         final PasswordBasedCipherUtils pbeCipher = PasswordBasedCipherUtils.PBE_SHA256_AES_CBC;
-        final byte[] encrypted = pbeCipher.test2(CipherMode.ENCRYPT, password, salt, iv, toEncrypt);
 
+        final byte[] encrypted = pbeCipher.test2(CipherMode.ENCRYPT, password, salt, iv, toEncrypt);
         System.out.println(GenericCipherUtils.bytesToBase64EncodedString(encrypted));
+
+        final byte[] encrypted2 = pbeCipher.test(CipherMode.ENCRYPT, password, salt, iv, toEncrypt);
+        System.out.println(GenericCipherUtils.bytesToBase64EncodedString(encrypted2));
     }
 }
