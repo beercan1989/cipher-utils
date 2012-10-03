@@ -21,7 +21,7 @@ public final class GenericCipherUtils {
      * @return A String containing the Base64 Encoded values of the UTF-8 byte array or <strong>null</strong> if
      *         the <strong>bytes</strong> param is <strong>null</strong>.
      */
-    public static final String bytesToBase64Encoded(final byte[] bytes) {
+    public static final String bytesToBase64EncodedString(final byte[] bytes) {
         return Base64.encodeBase64String(bytes);
     }
 
@@ -33,7 +33,7 @@ public final class GenericCipherUtils {
      * @return A UTF-8 byte array of the Decoded Base64 String or <strong>null</strong> if the
      *         <strong>base64String</strong> param is <strong>null</strong>.
      */
-    public static final byte[] base64EncodedToBytes(final String base64String) {
+    public static final byte[] base64EncodedStringToBytes(final String base64String) {
         return Base64.decodeBase64(base64String);
     }
 

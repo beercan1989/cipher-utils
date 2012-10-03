@@ -1,5 +1,8 @@
 package com.jbacon.cryptography.utils;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -57,8 +60,7 @@ public enum PasswordBasedCipherUtils {
     private final Digest digestEngine;
     private final boolean isCBC;
 
-    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass,
-            final Class<? extends Digest> digestClass, final boolean isCBC) {
+    private PasswordBasedCipherUtils(final Class<? extends BlockCipher> engineClass, final Class<? extends Digest> digestClass, final boolean isCBC) {
         try {
             cipherEngine = engineClass.newInstance();
             digestEngine = digestClass.newInstance();
@@ -70,8 +72,8 @@ public enum PasswordBasedCipherUtils {
         }
     }
 
-    public final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    public final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] input) throws DataLengthException, IllegalStateException,
+            InvalidCipherTextException {
         // Salt
         // Password
         // Iteration Count
@@ -90,23 +92,36 @@ public enum PasswordBasedCipherUtils {
         return cipher;
     }
 
-    public String test(final CipherMode mode, final char[] password, final byte[] salt, final String stringInput)
-            throws Exception {
+    /**
+     * Test Method.
+     * 
+     * @param mode
+     * @param password
+     * @param salt
+     * @param iv
+     *            Initialisation Vector - To help scramble the cipher text.
+     * @param input
+     *            The String to encrypt.
+     * @return The encrypted String.
+     * 
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     * @throws InvalidCipherTextException
+     * @throws IllegalStateException
+     * @throws DataLengthException
+     */
+    public byte[] test(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws NoSuchAlgorithmException,
+            InvalidKeySpecException, DataLengthException, IllegalStateException, InvalidCipherTextException {
 
-        final byte[] ivData = new byte[] {};
-        final byte[] input = GenericCipherUtils.stringToByte(stringInput);
-
-        final PBEKeySpec pbeKeySpec = new PBEKeySpec(password, salt, 50, 256);
-        final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithSHA256And256BitAES-CBC-BC");
-        final SecretKeySpec secretKey = new SecretKeySpec(keyFactory.generateSecret(pbeKeySpec).getEncoded(), "AES");
-        final byte[] key = secretKey.getEncoded();
-
-        // setup cipher parameters with key and IV
-        final KeyParameter keyParam = new KeyParameter(key);
-        final CipherParameters cipherParams = new ParametersWithIV(keyParam, ivData);
+        final PBEKeySpec pbeKeySpecification = new PBEKeySpec(password, salt, 50, 256);
+        final SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBEWithSHA256And256BitAES-CBC-BC");
+        final SecretKeySpec secretKeySpecification = new SecretKeySpec(secretKeyFactory.generateSecret(pbeKeySpecification).getEncoded(), "AES");
+        final byte[] generatedEncryptionKey = secretKeySpecification.getEncoded();
+        final KeyParameter keyParam = new KeyParameter(generatedEncryptionKey);
+        final CipherParameters cipherParams = new ParametersWithIV(keyParam, iv);
 
         final byte[] output = SymmetricCipherUtils.AES_FAST.doCipher(CipherMode.ENCRYPT, input, cipherParams);
 
-        return GenericCipherUtils.byteToString(output);
+        return output;
     }
 }

@@ -25,9 +25,13 @@ public class PasswordBasedCiphersTest {
     @Test
     public void shouldBeAbleToRunTest() throws Exception {
         final byte[] salt = GenericCipherUtils.generateSalt(8);
+        final byte[] iv = GenericCipherUtils.generateSalt(16);
         final char[] password = new char[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final String test = PasswordBasedCipherUtils.PBE_SHA256_AES_CBC.test(CipherMode.ENCRYPT, password, salt,
-                "HelloWorld.");
-        System.out.println(test);
+        final byte[] toEncrypt = GenericCipherUtils.stringToByte("HelloWorld.");
+
+        final PasswordBasedCipherUtils pbeCipher = PasswordBasedCipherUtils.PBE_SHA256_AES_CBC;
+        final byte[] encrypted = pbeCipher.test(CipherMode.ENCRYPT, password, salt, iv, toEncrypt);
+
+        System.out.println(GenericCipherUtils.bytesToBase64EncodedString(encrypted));
     }
 }

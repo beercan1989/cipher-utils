@@ -13,25 +13,25 @@ public class GenericCipherUtilsTest {
 
     @Test
     public void shouldConvertByteArrayToBase64EncodedString() {
-        final String base64Encoded = GenericCipherUtils.bytesToBase64Encoded(BYTEARRAY_HELLOWORLD);
+        final String base64Encoded = GenericCipherUtils.bytesToBase64EncodedString(BYTEARRAY_HELLOWORLD);
         assertThat(base64Encoded, is(equalTo(STRING_HELLOWORLD_AS_BASE64)));
     }
 
     @Test
     public void shouldConvertBase64EncodedStringToByteArray() {
-        final byte[] bytes = GenericCipherUtils.base64EncodedToBytes(STRING_HELLOWORLD_AS_BASE64);
+        final byte[] bytes = GenericCipherUtils.base64EncodedStringToBytes(STRING_HELLOWORLD_AS_BASE64);
         assertThat(bytes, is(equalTo(BYTEARRAY_HELLOWORLD)));
     }
 
     @Test
     public void shouldHandleNullBase64StringToByteArray() {
-        final byte[] bytes = GenericCipherUtils.base64EncodedToBytes(null);
+        final byte[] bytes = GenericCipherUtils.base64EncodedStringToBytes(null);
         assertThat(bytes, is(equalTo(null)));
     }
 
     @Test
     public void shouldHandleNullByteArrayToBase64String() {
-        final String base64Encoded = GenericCipherUtils.bytesToBase64Encoded(null);
+        final String base64Encoded = GenericCipherUtils.bytesToBase64EncodedString(null);
         assertThat(base64Encoded, is(equalTo(null)));
     }
 }
