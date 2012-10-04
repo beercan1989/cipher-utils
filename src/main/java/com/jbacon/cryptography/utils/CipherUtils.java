@@ -2,12 +2,14 @@ package com.jbacon.cryptography.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 import org.apache.commons.codec.binary.Base64;
 
 public final class CipherUtils {
-    private static final String SHA1PRNG = "SHA1PRNG";
+    private static final String PROVIDER = "SUN";
+    private static final String SECURE_RANDOM_ALGORITHM = "SHA1PRNG";
     private static final String UTF8 = "UTF-8";
 
     private CipherUtils() {
@@ -18,9 +20,10 @@ public final class CipherUtils {
      * 
      * @param bytes
      *            The UTF-8 Encoded byte array.
-     * @return A String containing the Base64 Encoded values of the UTF-8 byte array or <strong>null</strong> if the <strong>bytes</strong> param is <strong>null</strong>.
+     * @return A String containing the Base64 Encoded values of the UTF-8 byte array or <strong>null</strong> if the
+     *         <strong>bytes</strong> param is <strong>null</strong>.
      */
-    public static final String bytesToBase64EncodedString(final byte[] bytes) {
+    public static final String bytesToBase64Encoded(final byte[] bytes) {
         return Base64.encodeBase64String(bytes);
     }
 
@@ -29,7 +32,8 @@ public final class CipherUtils {
      * 
      * @param base64String
      *            The Base64 Encoded String.
-     * @return A UTF-8 byte array of the Decoded Base64 String or <strong>null</strong> if the <strong>base64String</strong> param is <strong>null</strong>.
+     * @return A UTF-8 byte array of the Decoded Base64 String or <strong>null</strong> if the
+     *         <strong>base64String</strong> param is <strong>null</strong>.
      */
     public static final byte[] base64EncodedStringToBytes(final String base64String) {
         return Base64.decodeBase64(base64String);
@@ -40,9 +44,10 @@ public final class CipherUtils {
      * 
      * @param bytes
      *            The UTF-8 byte array to covnert into a String.
-     * @return A String made from the UTF-8 byte array or <strong>null</strong> if the <strong>bytes</strong> param is <strong>null</strong>.
+     * @return A String made from the UTF-8 byte array or <strong>null</strong> if the <strong>bytes</strong> param is
+     *         <strong>null</strong>.
      */
-    public static String byteToString(final byte[] bytes) {
+    public static final String byteToString(final byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -59,9 +64,10 @@ public final class CipherUtils {
      * 
      * @param string
      *            The String to convert into a UTF-8 byte array.
-     * @return A UTF-8 encoded byte array or <strong>null</strong> if the <strong>string</strong> param is <strong>null</strong>.
+     * @return A UTF-8 encoded byte array or <strong>null</strong> if the <strong>string</strong> param is
+     *         <strong>null</strong>.
      */
-    public static byte[] stringToByte(final String string) {
+    public static final byte[] stringToByte(final String string) {
         try {
             return string.getBytes(UTF8);
         } catch (final UnsupportedEncodingException e) {
@@ -77,11 +83,25 @@ public final class CipherUtils {
      * @param numberOfBytes
      * @return
      * @throws NoSuchAlgorithmException
+     *             This is thrown if their isn't a provider for the 'SHA1PRNG'
      */
-    public static byte[] generateSalt(final int numberOfBytes) throws NoSuchAlgorithmException {
+    public static final byte[] generateBytes(final int numberOfBytes) {
         final byte[] salt = new byte[numberOfBytes];
-        final SecureRandom saltGen = SecureRandom.getInstance(SHA1PRNG);
+        final SecureRandom saltGen = getSecureRandom();
         saltGen.nextBytes(salt);
         return salt;
+    }
+
+    private static final SecureRandom getSecureRandom() {
+        try {
+            return SecureRandom.getInstance(SECURE_RANDOM_ALGORITHM, PROVIDER);
+        } catch (final NoSuchProviderException e) {
+            try {
+                return SecureRandom.getInstance(SECURE_RANDOM_ALGORITHM);
+            } catch (final NoSuchAlgorithmException e1) {
+            }
+        } catch (final NoSuchAlgorithmException e) {
+        }
+        return new SecureRandom();
     }
 }

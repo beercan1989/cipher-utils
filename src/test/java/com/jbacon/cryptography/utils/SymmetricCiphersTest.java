@@ -10,7 +10,7 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
 
-import com.jbacon.cryptography.CipherMode;
+import com.jbacon.cryptography.SymmetricCiphers;
 
 public class SymmetricCiphersTest {
 
@@ -23,9 +23,9 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToEncryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException {
-        final SymmetricCipherUtils aesCipher = SymmetricCipherUtils.AES;
+        final SymmetricCiphers aesCipher = SymmetricCiphers.AES;
 
-        final byte[] encrypted = aesCipher.doCipher(CipherMode.ENCRYPT, AES_KEY, TO_ENCRYPT);
+        final byte[] encrypted = aesCipher.encrypt(AES_KEY, TO_ENCRYPT);
 
         assertThat(encrypted, is(equalTo(TO_DECRYPT)));
     }
@@ -33,11 +33,20 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToDencryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException, UnsupportedEncodingException {
-        final SymmetricCipherUtils aesCipher = SymmetricCipherUtils.AES;
+        final SymmetricCiphers aesCipher = SymmetricCiphers.AES;
 
-        final byte[] decrypted = aesCipher.doCipher(CipherMode.DECRYPT, AES_KEY, TO_DECRYPT);
+        final byte[] decrypted = aesCipher.encrypt(AES_KEY, TO_DECRYPT);
 
         assertThat(decrypted, is(equalTo(TO_ENCRYPT)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldBeUnAbleToUse512BitKey() throws DataLengthException, IllegalStateException,
+            InvalidCipherTextException {
+        final byte[] key = CipherUtils.generateBytes(512);
+        final byte[] input = CipherUtils.stringToByte("512 bit key");
+
+        SymmetricCiphers.AES.encrypt(key, input);
     }
 
 }

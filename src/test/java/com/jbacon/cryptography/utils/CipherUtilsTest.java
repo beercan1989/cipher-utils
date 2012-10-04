@@ -6,14 +6,14 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-public class GenericCipherUtilsTest {
+public class CipherUtilsTest {
 
     private static final String STRING_HELLOWORLD_AS_BASE64 = "SGVsbG8gV29ybGQ=";
     private static final byte[] BYTEARRAY_HELLOWORLD = new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 };
 
     @Test
     public void shouldConvertByteArrayToBase64EncodedString() {
-        final String base64Encoded = CipherUtils.bytesToBase64EncodedString(BYTEARRAY_HELLOWORLD);
+        final String base64Encoded = CipherUtils.bytesToBase64Encoded(BYTEARRAY_HELLOWORLD);
         assertThat(base64Encoded, is(equalTo(STRING_HELLOWORLD_AS_BASE64)));
     }
 
@@ -31,7 +31,7 @@ public class GenericCipherUtilsTest {
 
     @Test
     public void shouldHandleNullByteArrayToBase64String() {
-        final String base64Encoded = CipherUtils.bytesToBase64EncodedString(null);
+        final String base64Encoded = CipherUtils.bytesToBase64Encoded(null);
         assertThat(base64Encoded, is(equalTo(null)));
     }
 }

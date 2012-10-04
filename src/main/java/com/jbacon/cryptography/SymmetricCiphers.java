@@ -1,4 +1,4 @@
-package com.jbacon.cryptography.utils;
+package com.jbacon.cryptography;
 
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -8,35 +8,34 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.engines.AESLightEngine;
-import org.bouncycastle.crypto.engines.BlowfishEngine;
 import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-import com.jbacon.cryptography.CipherMode;
-import com.jbacon.cryptography.CipherValidation;
-
-public enum SymmetricCipherUtils {
-    AES_FAST(AESFastEngine.class), //
-    AES(AESEngine.class), //
-    AES_SLOW(AESLightEngine.class), //
-    BLOWFISH(BlowfishEngine.class), //
-    TWOFISH(TwofishEngine.class);
+public enum SymmetricCiphers {
+    AES_FAST(new AESFastEngine()), //
+    AES(new AESEngine()), //
+    AES_SLOW(new AESLightEngine()), //
+    TWOFISH(new TwofishEngine());
 
     private final BlockCipher cipherEngine;
 
-    private SymmetricCipherUtils(final Class<? extends BlockCipher> engineClass) {
-        try {
-            cipherEngine = engineClass.newInstance();
-        } catch (final InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (final IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    private SymmetricCiphers(final BlockCipher cipherEngine) {
+        this.cipherEngine = cipherEngine;
     }
 
-    public final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
+    public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException {
+        return doCipher(CipherMode.ENCRYPT, key, input);
+    }
+
+    public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException {
+        return doCipher(CipherMode.DECRYPT, key, input);
+    }
+
+    private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
             throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         CipherValidation.validateInputs(mode, key, input);
         final KeyParameter keyParameter = new KeyParameter(key);

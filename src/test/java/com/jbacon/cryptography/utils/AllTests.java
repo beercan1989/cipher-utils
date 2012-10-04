@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ GenericCipherUtilsTest.class, PasswordBasedCiphersTest.class, SymmetricCiphersTest.class })
+@SuiteClasses({ CipherUtilsTest.class, PBECiphersTest.class, SymmetricCiphersTest.class })
 public class AllTests {
 
 }
