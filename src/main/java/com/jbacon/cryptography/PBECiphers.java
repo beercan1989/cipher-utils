@@ -1,8 +1,6 @@
 package com.jbacon.cryptography;
 
-import static com.jbacon.cryptography.SymmetricCiphers.AES_FAST;
-import static com.jbacon.cryptography.SymmetricCiphers.TWOFISH;
-
+import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.ExtendedDigest;
@@ -13,6 +11,8 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.digests.WhirlpoolDigest;
+import org.bouncycastle.crypto.engines.AESFastEngine;
+import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
@@ -28,31 +28,31 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
  */
-public enum PBECiphers {
+public class PBECiphers extends AbstractCiphers {
 
     @Deprecated
-    PBE_MD5_AES_CBC(AES_FAST, new MD5Digest()), //
+    public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(new AESFastEngine(), new MD5Digest());
     @Deprecated
-    PBE_SHA1_AES_CBC(AES_FAST, new SHA1Digest()), //
-    PBE_SHA256_AES_CBC(AES_FAST, new SHA256Digest()), //
-    PBE_SHA512_AES_CBC(AES_FAST, new SHA512Digest()), //
-    PBE_WHIRLPOOL_AES_CBC(AES_FAST, new WhirlpoolDigest()), //
+    public static final PBECiphers PBE_SHA1_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA1Digest());
+    public static final PBECiphers PBE_SHA256_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA256Digest());
+    public static final PBECiphers PBE_SHA512_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA512Digest());
+    public static final PBECiphers PBE_WHIRLPOOL_AES_CBC = new PBECiphers(new AESFastEngine(), new WhirlpoolDigest());
 
     @Deprecated
-    PBE_MD5_TWOFISH_CBC(TWOFISH, new MD5Digest()), //
+    public static final PBECiphers PBE_MD5_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new MD5Digest());
     @Deprecated
-    PBE_SHA1_TWOFISH_CBC(TWOFISH, new SHA1Digest()), //
-    PBE_SHA256_TWOFISH_CBC(TWOFISH, new SHA256Digest()), //
-    PBE_SHA512_TWOFISH_CBC(TWOFISH, new SHA512Digest()), //
-    PBE_WHIRLPOOL_TWOFISH_CBC(TWOFISH, new WhirlpoolDigest()); //
+    public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA1Digest());
+    public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA256Digest());
+    public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA512Digest());
+    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(new TwofishEngine(),
+            new WhirlpoolDigest());
 
     private static final int ITERATION_COUNT = 50;
 
-    private final SymmetricCiphers cipherEngine;
     private final ExtendedDigest digestEngine;
 
-    private PBECiphers(final SymmetricCiphers cipherEngine, final ExtendedDigest digestEngine) {
-        this.cipherEngine = cipherEngine;
+    private PBECiphers(final BlockCipher cipherEngine, final ExtendedDigest digestEngine) {
+        super(cipherEngine);
         this.digestEngine = digestEngine;
     }
 
@@ -68,13 +68,15 @@ public enum PBECiphers {
 
     private final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv,
             final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        CipherValidation.validateInputs(mode, password, salt, iv, input);
+        AbstractCiphers.validateInputs(mode, password, salt, iv, input);
+
+        digestEngine.reset();
 
         final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT,
                 CipherKeySize.KS_256.getKeySize()));
         final CipherParameters cipherParams = new ParametersWithIV(keyParam, iv);
 
-        final byte[] output = cipherEngine.doCipher(CipherMode.ENCRYPT, input, cipherParams);
+        final byte[] output = doCipher(mode, input, cipherParams);
 
         return output;
     }

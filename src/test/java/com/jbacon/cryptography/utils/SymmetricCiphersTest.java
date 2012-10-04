@@ -23,9 +23,7 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToEncryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException {
-        final SymmetricCiphers aesCipher = SymmetricCiphers.AES;
-
-        final byte[] encrypted = aesCipher.encrypt(AES_KEY, TO_ENCRYPT);
+        final byte[] encrypted = SymmetricCiphers.AES.encrypt(AES_KEY, TO_ENCRYPT);
 
         assertThat(encrypted, is(equalTo(TO_DECRYPT)));
     }
@@ -33,9 +31,7 @@ public class SymmetricCiphersTest {
     @Test
     public void shouldBeAbleToDencryptWithAES() throws DataLengthException, IllegalStateException,
             InvalidCipherTextException, UnsupportedEncodingException {
-        final SymmetricCiphers aesCipher = SymmetricCiphers.AES;
-
-        final byte[] decrypted = aesCipher.encrypt(AES_KEY, TO_DECRYPT);
+        final byte[] decrypted = SymmetricCiphers.AES.decrypt(AES_KEY, TO_DECRYPT);
 
         assertThat(decrypted, is(equalTo(TO_ENCRYPT)));
     }

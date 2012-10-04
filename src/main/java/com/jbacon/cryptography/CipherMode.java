@@ -1,6 +1,6 @@
 package com.jbacon.cryptography;
 
-public enum CipherMode {
+enum CipherMode {
     ENCRYPT(), //
     DECRYPT(); //
 }
