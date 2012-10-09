@@ -20,7 +20,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import com.jbacon.cryptography.CipherKeySize;
 
 /**
- * This Enum provides easy access to a PBE built with the BouncyCastle lightweight api.
+ * This class provides easy access to a PBE solution built up on the BouncyCastle lightweight api.
  * 
  * The Ciphers used in the PBE's have been set to 256bit keys, as this is the highest supported key size using the BouncyCastle's lightweight api.
  * 
@@ -54,11 +54,39 @@ public class PBECiphers extends AbstractCiphers {
         this.digestEngine = digestEngine;
     }
 
+    /**
+     * Encrypts the input using PBE.
+     * 
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param input The data to encrypt.
+     * 
+     * @return The encrypted data.
+     * 
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     */
     public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
             InvalidCipherTextException {
         return doCipher(CipherMode.ENCRYPT, password, salt, iv, input);
     }
 
+    /**
+     * Decrypts the input using PBE.
+     * 
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param input the data to decrypt using the password, salt and iv.
+     * 
+     * @return the decrypted data.
+     * 
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     */
     public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
             InvalidCipherTextException {
         return doCipher(CipherMode.DECRYPT, password, salt, iv, input);
