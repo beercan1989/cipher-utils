@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.jbacon.cryptography.utils.CipherUtils;
+
 public class CipherUtilsTest {
 
     private static final String STRING_HELLOWORLD_AS_BASE64 = "SGVsbG8gV29ybGQ=";
