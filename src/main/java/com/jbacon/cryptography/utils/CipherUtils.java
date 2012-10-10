@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
-import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.util.encoders.Base64;
 
 public final class CipherUtils {
     private static final String PROVIDER = "SUN";
@@ -24,7 +24,11 @@ public final class CipherUtils {
      *         <strong>bytes</strong> param is <strong>null</strong>.
      */
     public static final String bytesToBase64Encoded(final byte[] bytes) {
-        return Base64.encodeBase64String(bytes);
+        if (bytes == null) {
+            return null;
+        }
+        return byteToString(Base64.encode(bytes));
+        // return Base64.encodeBase64String(bytes); // commons-lang
     }
 
     /**
@@ -36,7 +40,11 @@ public final class CipherUtils {
      *         <strong>base64String</strong> param is <strong>null</strong>.
      */
     public static final byte[] base64EncodedStringToBytes(final String base64String) {
-        return Base64.decodeBase64(base64String);
+        if (base64String == null) {
+            return null;
+        }
+        return Base64.decode(stringToByte(base64String));
+        // return Base64.decodeBase64(base64String); // commons-lang
     }
 
     /**
