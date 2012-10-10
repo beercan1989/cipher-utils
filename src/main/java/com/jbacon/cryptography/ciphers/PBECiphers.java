@@ -1,4 +1,4 @@
-package com.jbacon.cryptography;
+package com.jbacon.cryptography.ciphers;
 
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -17,13 +17,12 @@ import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
+import com.jbacon.cryptography.CipherKeySize;
+
 /**
- * This Enum provides easy access to a PBE built with the BouncyCastle
- * lightweight api.
+ * This class provides easy access to a PBE solution built up on the BouncyCastle lightweight api.
  * 
- * The Ciphers used in the PBE's have been set to 256bit keys, as this
- * is the highest supported key size using the BouncyCastle's lightweight
- * api.
+ * The Ciphers used in the PBE's have been set to 256bit keys, as this is the highest supported key size using the BouncyCastle's lightweight api.
  * 
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
@@ -44,8 +43,7 @@ public class PBECiphers extends AbstractCiphers {
     public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA1Digest());
     public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA256Digest());
     public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA512Digest());
-    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(new TwofishEngine(),
-            new WhirlpoolDigest());
+    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new WhirlpoolDigest());
 
     private static final int ITERATION_COUNT = 50;
 
@@ -56,24 +54,51 @@ public class PBECiphers extends AbstractCiphers {
         this.digestEngine = digestEngine;
     }
 
-    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    /**
+     * Encrypts the input using PBE.
+     * 
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param input The data to encrypt.
+     * 
+     * @return The encrypted data.
+     * 
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     */
+    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
+            InvalidCipherTextException {
         return doCipher(CipherMode.ENCRYPT, password, salt, iv, input);
     }
 
-    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    /**
+     * Decrypts the input using PBE.
+     * 
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param input the data to decrypt using the password, salt and iv.
+     * 
+     * @return the decrypted data.
+     * 
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     */
+    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
+            InvalidCipherTextException {
         return doCipher(CipherMode.DECRYPT, password, salt, iv, input);
     }
 
-    private final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv,
-            final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        AbstractCiphers.validateInputs(mode, password, salt, iv, input);
+    private final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException {
+        AbstractCiphers.validateInputs(password, salt, iv, input);
 
         digestEngine.reset();
 
-        final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT,
-                CipherKeySize.KS_256.getKeySize()));
+        final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT, CipherKeySize.KS_256.getKeySize()));
         final CipherParameters cipherParams = new ParametersWithIV(keyParam, iv);
 
         final byte[] output = doCipher(mode, input, cipherParams);
@@ -81,9 +106,8 @@ public class PBECiphers extends AbstractCiphers {
         return output;
     }
 
-    private final byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount,
-            final int keySize) {
-        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize, 128);
+    private final byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount, final int keySize) {
+        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize, CipherKeySize.KS_128.getKeySize());
 
         if (param instanceof ParametersWithIV) {
             return ((KeyParameter) ((ParametersWithIV) param).getParameters()).getKey();
@@ -92,8 +116,7 @@ public class PBECiphers extends AbstractCiphers {
         }
     }
 
-    private final CipherParameters makePBEParameters(final char[] password, final byte[] salt,
-            final int iterationCount, final int keySize, final int ivSize) {
+    private final CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount, final int keySize, final int ivSize) {
         final PBEParametersGenerator generator = new PKCS12ParametersGenerator(digestEngine);
         final byte[] key = PBEParametersGenerator.PKCS12PasswordToBytes(password);
         CipherParameters param;

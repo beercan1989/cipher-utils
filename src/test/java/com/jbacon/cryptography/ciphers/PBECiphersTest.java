@@ -1,15 +1,15 @@
-package com.jbacon.cryptography.utils;
+package com.jbacon.cryptography.ciphers;
 
-import static com.jbacon.cryptography.PBECiphers.PBE_MD5_AES_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_MD5_TWOFISH_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA1_AES_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA1_TWOFISH_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA256_AES_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA256_TWOFISH_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA512_AES_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_SHA512_TWOFISH_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_WHIRLPOOL_AES_CBC;
-import static com.jbacon.cryptography.PBECiphers.PBE_WHIRLPOOL_TWOFISH_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_MD5_AES_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_MD5_TWOFISH_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA1_AES_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA1_TWOFISH_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA256_AES_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA256_TWOFISH_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA512_AES_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_SHA512_TWOFISH_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_WHIRLPOOL_AES_CBC;
+import static com.jbacon.cryptography.ciphers.PBECiphers.PBE_WHIRLPOOL_TWOFISH_CBC;
 import static com.jbacon.cryptography.utils.CipherUtils.bytesToBase64Encoded;
 
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +18,8 @@ import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.jbacon.cryptography.utils.CipherUtils;
 
 public class PBECiphersTest {
 

@@ -1,4 +1,4 @@
-package com.jbacon.cryptography;
+package com.jbacon.cryptography.ciphers;
 
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -9,23 +9,27 @@ import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
 abstract class AbstractCiphers {
+    enum CipherMode {
+        ENCRYPT, //
+        DECRYPT; //
+    }
+
     private final BlockCipher cipherEngine;
 
     protected AbstractCiphers(final BlockCipher cipherEngine) {
         this.cipherEngine = cipherEngine;
     }
 
-    protected static final void validateInputs(final CipherMode mode, final byte[] key, final byte[] input) {
-        validateInputs(mode, input);
+    protected static final void validateInputs(final byte[] key, final byte[] input) {
+        validateInputs(input);
 
         if (key == null) {
             throw new NullPointerException("Provided cipher key was null.");
         }
     }
 
-    protected static void validateInputs(final CipherMode mode, final char[] password, final byte[] salt,
-            final byte[] iv, final byte[] input) {
-        validateInputs(mode, input);
+    protected static void validateInputs(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) {
+        validateInputs(input);
 
         if (salt == null) {
             throw new NullPointerException("Provided salt was null.");
@@ -40,18 +44,14 @@ abstract class AbstractCiphers {
         }
     }
 
-    protected static final void validateInputs(final CipherMode mode, final byte[] input) {
-        if (mode == null) {
-            throw new NullPointerException("CipherMode was null.");
-        }
-
+    protected static final void validateInputs(final byte[] input) {
         if (input == null) {
             throw new NullPointerException("Provided cipher input was null.");
         }
     }
 
-    protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams) throws DataLengthException, IllegalStateException,
+            InvalidCipherTextException {
 
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);

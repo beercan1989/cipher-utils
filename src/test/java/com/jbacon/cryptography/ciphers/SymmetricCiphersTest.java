@@ -1,4 +1,4 @@
-package com.jbacon.cryptography.utils;
+package com.jbacon.cryptography.ciphers;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -10,7 +10,8 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
 
-import com.jbacon.cryptography.SymmetricCiphers;
+import com.jbacon.cryptography.ciphers.SymmetricCiphers;
+import com.jbacon.cryptography.utils.CipherUtils;
 
 public class SymmetricCiphersTest {
 
