@@ -1,13 +1,17 @@
 package com.jbacon.cryptography.ciphers;
 
-import org.bouncycastle.crypto.BlockCipher;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.AESFast;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.AESMedium;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.AESSlow;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.Twofish;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.DECRYPT;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.ENCRYPT;
+
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.engines.AESFastEngine;
-import org.bouncycastle.crypto.engines.AESLightEngine;
-import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
+
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
 
 /**
  * This class provides easy access to certain Ciphers available in BouncyCastle's lightweight api.<br />
@@ -20,12 +24,12 @@ import org.bouncycastle.crypto.params.KeyParameter;
  * @version 0.0.1-SNAPSHOT
  */
 public final class SymmetricCiphers extends AbstractCiphers {
-    public static final SymmetricCiphers AES_FAST = new SymmetricCiphers(new AESFastEngine());
-    public static final SymmetricCiphers AES = new SymmetricCiphers(new AESEngine());
-    public static final SymmetricCiphers AES_SLOW = new SymmetricCiphers(new AESLightEngine());
-    public static final SymmetricCiphers TWOFISH = new SymmetricCiphers(new TwofishEngine());
+    public static final SymmetricCiphers AES_FAST = new SymmetricCiphers(AESFast);
+    public static final SymmetricCiphers AES = new SymmetricCiphers(AESMedium);
+    public static final SymmetricCiphers AES_SLOW = new SymmetricCiphers(AESSlow);
+    public static final SymmetricCiphers TWOFISH = new SymmetricCiphers(Twofish);
 
-    private SymmetricCiphers(final BlockCipher cipherEngine) {
+    private SymmetricCiphers(final CipherEngine cipherEngine) {
         super(cipherEngine);
     }
 
@@ -40,9 +44,11 @@ public final class SymmetricCiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherType if the cipher engine is not currently supported.
      */
-    public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        return doCipher(CipherMode.ENCRYPT, key, input);
+    public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+        return doCipher(ENCRYPT, key, input);
     }
 
     /**
@@ -56,12 +62,15 @@ public final class SymmetricCiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherType if the cipher engine is not currently supported.
      */
-    public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        return doCipher(CipherMode.DECRYPT, key, input);
+    public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException,
+            IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+        return doCipher(DECRYPT, key, input);
     }
 
-    private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
         validateInputs(key, input);
         final KeyParameter keyParameter = new KeyParameter(key);
         return doCipher(mode, input, keyParameter);

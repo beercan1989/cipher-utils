@@ -5,19 +5,67 @@ import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.engines.AESFastEngine;
+import org.bouncycastle.crypto.engines.AESLightEngine;
+import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
+
 abstract class AbstractCiphers {
-    enum CipherMode {
+
+    protected static enum CipherMode {
         ENCRYPT, //
         DECRYPT; //
     }
 
-    private final BlockCipher cipherEngine;
+    protected static enum CipherEngine {
+        AESFast, //
+        AESMedium, //
+        AESSlow, //
+        Twofish; //
+    }
 
-    protected AbstractCiphers(final BlockCipher cipherEngine) {
+    private final CipherEngine cipherEngine;
+
+    protected AbstractCiphers(final CipherEngine cipherEngine) {
         this.cipherEngine = cipherEngine;
+    }
+
+    protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+
+        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(getCipherEngine(cipherEngine));
+        final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
+
+        cipher.reset();
+        cipher.init(CipherMode.ENCRYPT.equals(mode), cipherParams);
+
+        final byte[] outputBuffer = new byte[cipher.getOutputSize(input.length)];
+        int length = cipher.processBytes(input, 0, input.length, outputBuffer, 0);
+        length += cipher.doFinal(outputBuffer, length);
+
+        final byte[] output = new byte[length];
+        System.arraycopy(outputBuffer, 0, output, 0, length);
+
+        return output;
+    }
+
+    private static BlockCipher getCipherEngine(final CipherEngine cipherEngine) throws UnsupportedCipherType {
+        switch (cipherEngine) {
+        case AESFast:
+            return new AESFastEngine();
+        case AESMedium:
+            return new AESEngine();
+        case AESSlow:
+            return new AESLightEngine();
+        case Twofish:
+            return new TwofishEngine();
+        default:
+            throw new UnsupportedCipherType("Cipher engine not supported.");
+        }
     }
 
     protected static final void validateInputs(final byte[] key, final byte[] input) {
@@ -48,24 +96,5 @@ abstract class AbstractCiphers {
         if (input == null) {
             throw new NullPointerException("Provided cipher input was null.");
         }
-    }
-
-    protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams) throws DataLengthException, IllegalStateException,
-            InvalidCipherTextException {
-
-        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine);
-        final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
-
-        cipher.reset();
-        cipher.init(CipherMode.ENCRYPT.equals(mode), cipherParams);
-
-        final byte[] outputBuffer = new byte[cipher.getOutputSize(input.length)];
-        int length = cipher.processBytes(input, 0, input.length, outputBuffer, 0);
-        length += cipher.doFinal(outputBuffer, length);
-
-        final byte[] output = new byte[length];
-        System.arraycopy(outputBuffer, 0, output, 0, length);
-
-        return output;
     }
 }

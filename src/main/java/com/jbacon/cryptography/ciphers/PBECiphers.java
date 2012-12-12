@@ -1,6 +1,15 @@
 package com.jbacon.cryptography.ciphers;
 
-import org.bouncycastle.crypto.BlockCipher;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.AESFast;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.Twofish;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.DECRYPT;
+import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.ENCRYPT;
+import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.MD5;
+import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA1;
+import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA256;
+import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA512;
+import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.Whirlpool;
+
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.ExtendedDigest;
@@ -11,47 +20,58 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.digests.WhirlpoolDigest;
-import org.bouncycastle.crypto.engines.AESFastEngine;
-import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import com.jbacon.cryptography.CipherKeySize;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherDigestType;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
 
 /**
  * This class provides easy access to a PBE solution built up on the BouncyCastle lightweight api.
  * 
- * The Ciphers used in the PBE's have been set to 256bit keys, as this is the highest supported key size using the BouncyCastle's lightweight api.
+ * The Ciphers used in the PBE's have been set to 256bit keys, as this is the highest supported key size using the
+ * BouncyCastle's lightweight api.
  * 
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
  */
-public class PBECiphers extends AbstractCiphers {
+public final class PBECiphers extends AbstractCiphers {
 
     @Deprecated
-    public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(new AESFastEngine(), new MD5Digest());
+    public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(AESFast, MD5);
     @Deprecated
-    public static final PBECiphers PBE_SHA1_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA1Digest());
-    public static final PBECiphers PBE_SHA256_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA256Digest());
-    public static final PBECiphers PBE_SHA512_AES_CBC = new PBECiphers(new AESFastEngine(), new SHA512Digest());
-    public static final PBECiphers PBE_WHIRLPOOL_AES_CBC = new PBECiphers(new AESFastEngine(), new WhirlpoolDigest());
+    public static final PBECiphers PBE_SHA1_AES_CBC = new PBECiphers(AESFast, SHA1);
+    public static final PBECiphers PBE_SHA256_AES_CBC = new PBECiphers(AESFast, SHA256);
+    public static final PBECiphers PBE_SHA512_AES_CBC = new PBECiphers(AESFast, SHA512);
+    public static final PBECiphers PBE_WHIRLPOOL_AES_CBC = new PBECiphers(AESFast, Whirlpool);
 
     @Deprecated
-    public static final PBECiphers PBE_MD5_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new MD5Digest());
+    public static final PBECiphers PBE_MD5_TWOFISH_CBC = new PBECiphers(Twofish, MD5);
     @Deprecated
-    public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA1Digest());
-    public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA256Digest());
-    public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new SHA512Digest());
-    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(new TwofishEngine(), new WhirlpoolDigest());
+    public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(Twofish, SHA1);
+    public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(Twofish, SHA256);
+    public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(Twofish, SHA512);
+    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(Twofish, Whirlpool);
 
     private static final int ITERATION_COUNT = 50;
 
-    private final ExtendedDigest digestEngine;
+    protected static enum DigestType {
+        @Deprecated
+        MD5, //
+        @Deprecated
+        SHA1, //
+        SHA256, //
+        SHA512, //
+        Whirlpool;
+    }
 
-    private PBECiphers(final BlockCipher cipherEngine, final ExtendedDigest digestEngine) {
+    private final DigestType digestType;
+
+    private PBECiphers(final CipherEngine cipherEngine, final DigestType digestType) {
         super(cipherEngine);
-        this.digestEngine = digestEngine;
+        this.digestType = digestType;
     }
 
     /**
@@ -67,10 +87,13 @@ public class PBECiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherDigestType if the Digest type is not currently supported.
+     * @exception UnsupportedCipherType if the Cipher type is not currently supported.
      */
-    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
-            InvalidCipherTextException {
-        return doCipher(CipherMode.ENCRYPT, password, salt, iv, input);
+    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType,
+            UnsupportedCipherDigestType {
+        return doCipher(ENCRYPT, password, salt, iv, input);
     }
 
     /**
@@ -86,19 +109,22 @@ public class PBECiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherDigestType if the Digest type is not currently supported.
+     * @exception UnsupportedCipherType if the Cipher type is not currently supported.
      */
-    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException, IllegalStateException,
-            InvalidCipherTextException {
-        return doCipher(CipherMode.DECRYPT, password, salt, iv, input);
+    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType,
+            UnsupportedCipherDigestType {
+        return doCipher(DECRYPT, password, salt, iv, input);
     }
 
-    private final byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException,
-            IllegalStateException, InvalidCipherTextException {
+    private byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv,
+            final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException,
+            UnsupportedCipherType, UnsupportedCipherDigestType {
         AbstractCiphers.validateInputs(password, salt, iv, input);
 
-        digestEngine.reset();
-
-        final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT, CipherKeySize.KS_256.getKeySize()));
+        final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT,
+                CipherKeySize.KS_256.getKeySize()));
         final CipherParameters cipherParams = new ParametersWithIV(keyParam, iv);
 
         final byte[] output = doCipher(mode, input, cipherParams);
@@ -106,8 +132,10 @@ public class PBECiphers extends AbstractCiphers {
         return output;
     }
 
-    private final byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount, final int keySize) {
-        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize, CipherKeySize.KS_128.getKeySize());
+    private byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount,
+            final int keySize) throws UnsupportedCipherDigestType {
+        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize,
+                CipherKeySize.KS_128.getKeySize());
 
         if (param instanceof ParametersWithIV) {
             return ((KeyParameter) ((ParametersWithIV) param).getParameters()).getKey();
@@ -116,8 +144,9 @@ public class PBECiphers extends AbstractCiphers {
         }
     }
 
-    private final CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount, final int keySize, final int ivSize) {
-        final PBEParametersGenerator generator = new PKCS12ParametersGenerator(digestEngine);
+    private CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount,
+            final int keySize, final int ivSize) throws UnsupportedCipherDigestType {
+        final PBEParametersGenerator generator = new PKCS12ParametersGenerator(getDigest(digestType));
         final byte[] key = PBEParametersGenerator.PKCS12PasswordToBytes(password);
         CipherParameters param;
 
@@ -134,5 +163,22 @@ public class PBECiphers extends AbstractCiphers {
         }
 
         return param;
+    }
+
+    private static ExtendedDigest getDigest(final DigestType digestType) throws UnsupportedCipherDigestType {
+        switch (digestType) {
+        case MD5:
+            return new MD5Digest();
+        case SHA1:
+            return new SHA1Digest();
+        case SHA256:
+            return new SHA256Digest();
+        case SHA512:
+            return new SHA512Digest();
+        case Whirlpool:
+            return new WhirlpoolDigest();
+        default:
+            throw new UnsupportedCipherDigestType("Digest not supported.");
+        }
     }
 }
