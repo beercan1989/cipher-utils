@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
 
 /**
  * This class provides easy access to certain Ciphers available in BouncyCastle's lightweight api.<br />
@@ -44,10 +44,10 @@ public final class SymmetricCiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
-     * @exception UnsupportedCipherType if the cipher engine is not currently supported.
+     * @exception UnsupportedCipherEngine if the cipher engine is not currently supported.
      */
     public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException,
-            IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+            IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine {
         return doCipher(ENCRYPT, key, input);
     }
 
@@ -62,15 +62,15 @@ public final class SymmetricCiphers extends AbstractCiphers {
      * @exception InvalidCipherTextException if padding is expected and not found.
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
-     * @exception UnsupportedCipherType if the cipher engine is not currently supported.
+     * @exception UnsupportedCipherEngine if the cipher engine is not currently supported.
      */
     public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException,
-            IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+            IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine {
         return doCipher(DECRYPT, key, input);
     }
 
     private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine {
         validateInputs(key, input);
         final KeyParameter keyParameter = new KeyParameter(key);
         return doCipher(mode, input, keyParameter);

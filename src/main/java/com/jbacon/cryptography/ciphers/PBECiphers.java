@@ -26,7 +26,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import com.jbacon.cryptography.CipherKeySize;
 import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherDigestType;
-import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
 
 /**
  * This class provides easy access to a PBE solution built up on the BouncyCastle lightweight api.
@@ -79,7 +79,7 @@ public final class PBECiphers extends AbstractCiphers {
      * 
      * @param password the users password used to generate the cipher key.
      * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
-     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param iv the initialisation vector, a random array of bytes. Similar to salt in its function.
      * @param input The data to encrypt.
      * 
      * @return The encrypted data.
@@ -88,10 +88,10 @@ public final class PBECiphers extends AbstractCiphers {
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
      * @exception UnsupportedCipherDigestType if the Digest type is not currently supported.
-     * @exception UnsupportedCipherType if the Cipher type is not currently supported.
+     * @exception UnsupportedCipherEngine if the Cipher type is not currently supported.
      */
     public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType,
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine,
             UnsupportedCipherDigestType {
         return doCipher(ENCRYPT, password, salt, iv, input);
     }
@@ -101,7 +101,7 @@ public final class PBECiphers extends AbstractCiphers {
      * 
      * @param password the users password used to generate the cipher key.
      * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
-     * @param iv the initialization vector, a random array of bytes. Similar to salt in its function.
+     * @param iv the initialisation vector, a random array of bytes. Similar to salt in its function.
      * @param input the data to decrypt using the password, salt and iv.
      * 
      * @return the decrypted data.
@@ -110,18 +110,18 @@ public final class PBECiphers extends AbstractCiphers {
      * @exception DataLengthException if there isn't enough space in out.
      * @exception IllegalStateException if the cipher isn't initialised.
      * @exception UnsupportedCipherDigestType if the Digest type is not currently supported.
-     * @exception UnsupportedCipherType if the Cipher type is not currently supported.
+     * @exception UnsupportedCipherEngine if the Cipher type is not currently supported.
      */
     public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType,
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine,
             UnsupportedCipherDigestType {
         return doCipher(DECRYPT, password, salt, iv, input);
     }
 
     private byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv,
             final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException,
-            UnsupportedCipherType, UnsupportedCipherDigestType {
-        AbstractCiphers.validateInputs(password, salt, iv, input);
+            UnsupportedCipherEngine, UnsupportedCipherDigestType {
+        validateInputs(password, salt, iv, input);
 
         final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT,
                 CipherKeySize.KS_256.getKeySize()));

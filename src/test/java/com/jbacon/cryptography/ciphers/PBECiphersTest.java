@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherDigestType;
-import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
 import com.jbacon.cryptography.utils.CipherUtils;
 
 public class PBECiphersTest {
@@ -43,7 +43,7 @@ public class PBECiphersTest {
 
     @Test
     public void shouldBeAbleToRunDoCipher() throws DataLengthException, IllegalStateException,
-            InvalidCipherTextException, UnsupportedCipherType, UnsupportedCipherDigestType {
+            InvalidCipherTextException, UnsupportedCipherEngine, UnsupportedCipherDigestType {
         System.out.println(bytesToBase64Encoded(PBE_MD5_AES_CBC.encrypt(password, salt, iv, toEncrypt)));
         System.out.println(bytesToBase64Encoded(PBE_SHA1_AES_CBC.encrypt(password, salt, iv, toEncrypt)));
         System.out.println(bytesToBase64Encoded(PBE_SHA256_AES_CBC.encrypt(password, salt, iv, toEncrypt)));

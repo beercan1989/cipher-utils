@@ -1,5 +1,9 @@
 package com.jbacon.cryptography.ciphers;
 
+import java.util.Arrays;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -12,7 +16,7 @@ import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
-import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherType;
+import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
 
 abstract class AbstractCiphers {
 
@@ -28,6 +32,8 @@ abstract class AbstractCiphers {
         Twofish; //
     }
 
+    private static final Log LOG = LogFactory.getLog(AbstractCiphers.class);
+
     private final CipherEngine cipherEngine;
 
     protected AbstractCiphers(final CipherEngine cipherEngine) {
@@ -35,7 +41,20 @@ abstract class AbstractCiphers {
     }
 
     protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherType {
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine {
+        if (LOG.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Mode [");
+            sb.append(mode);
+            sb.append("], Input [");
+            sb.append(Arrays.toString(input));
+            sb.append("], Cipher Parameters [");
+            sb.append(cipherParams);
+            sb.append("], Cipher Engine [");
+            sb.append(cipherEngine);
+            sb.append("]");
+            LOG.debug(sb.toString());
+        }
 
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(getCipherEngine(cipherEngine));
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
@@ -53,7 +72,7 @@ abstract class AbstractCiphers {
         return output;
     }
 
-    private static BlockCipher getCipherEngine(final CipherEngine cipherEngine) throws UnsupportedCipherType {
+    private static BlockCipher getCipherEngine(final CipherEngine cipherEngine) throws UnsupportedCipherEngine {
         switch (cipherEngine) {
         case AESFast:
             return new AESFastEngine();
@@ -64,11 +83,21 @@ abstract class AbstractCiphers {
         case Twofish:
             return new TwofishEngine();
         default:
-            throw new UnsupportedCipherType("Cipher engine not supported.");
+            throw new UnsupportedCipherEngine("Cipher engine not supported.");
         }
     }
 
     protected static final void validateInputs(final byte[] key, final byte[] input) {
+        if (LOG.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Key [");
+            sb.append(Arrays.toString(key));
+            sb.append("], Input [");
+            sb.append(Arrays.toString(input));
+            sb.append("]");
+            LOG.debug(sb.toString());
+        }
+
         validateInputs(input);
 
         if (key == null) {
@@ -76,7 +105,22 @@ abstract class AbstractCiphers {
         }
     }
 
-    protected static void validateInputs(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) {
+    protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv,
+            final byte[] input) {
+        if (LOG.isDebugEnabled()) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Password [");
+            sb.append(mask(password.length));
+            sb.append("], Salt [");
+            sb.append(Arrays.toString(salt));
+            sb.append("], Initialisation Vector [");
+            sb.append(Arrays.toString(iv));
+            sb.append("], Input [");
+            sb.append(Arrays.toString(input));
+            sb.append("]");
+            LOG.debug(sb.toString());
+        }
+
         validateInputs(input);
 
         if (salt == null) {
@@ -92,9 +136,17 @@ abstract class AbstractCiphers {
         }
     }
 
-    protected static final void validateInputs(final byte[] input) {
+    private static void validateInputs(final byte[] input) {
         if (input == null) {
             throw new NullPointerException("Provided cipher input was null.");
         }
+    }
+
+    private static StringBuilder mask(final long length) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append("*");
+        }
+        return sb;
     }
 }
