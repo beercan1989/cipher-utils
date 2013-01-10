@@ -1,11 +1,11 @@
 package com.jbacon.cryptography.ciphers;
 
-import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.CipherEngine.ElGamalEngine;
-import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.CipherEngine.NaccacheSternEngine;
-import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.CipherEngine.RSAEngine;
+import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.ElGamalEngine;
+import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.NaccacheSternEngine;
+import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.RSAEngine;
+import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.AsymmetricEncoders.PKCS1;
 import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.CipherMode.DECRYPT;
 import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.CipherMode.ENCRYPT;
-import static com.jbacon.cryptography.ciphers.AsymmetricCiphers.EncoderType.PKCS1;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,6 +21,7 @@ import org.bouncycastle.crypto.engines.NaccacheSternEngine;
 import org.bouncycastle.crypto.engines.RSAEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
 
 import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEncoder;
 import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
@@ -45,24 +46,48 @@ public final class AsymmetricCiphers {
         DECRYPT; //
     }
 
-    protected static enum CipherEngine {
+    protected static enum AsymmetricCipherEngines {
         ElGamalEngine, //
         NaccacheSternEngine, //
         RSAEngine; //
+
+        public AsymmetricBlockCipher getInstance() throws UnsupportedCipherEngine {
+            switch (this) {
+            case ElGamalEngine:
+                return new ElGamalEngine();
+            case NaccacheSternEngine:
+                return new NaccacheSternEngine();
+            case RSAEngine:
+                return new RSAEngine();
+            default:
+                throw new UnsupportedCipherEngine("Asymmetric cipher engine not supported.");
+            }
+        }
     }
 
-    protected static enum EncoderType {
+    protected static enum AsymmetricEncoders {
         OAEP, //
         PKCS1, //
         ISO9796d1; //
+
+        public AsymmetricBlockCipher getInstance(final AsymmetricBlockCipher cipherEngine)
+                throws UnsupportedCipherEncoder {
+            switch (this) {
+            case PKCS1:
+                return new PKCS1Encoding(cipherEngine);
+            default:
+                throw new UnsupportedCipherEncoder("Asymmetric encoder not supported.");
+            }
+        }
     }
 
-    private final EncoderType encoderType;
-    private final CipherEngine cipherEngine;
+    private final AsymmetricEncoders asymmetricEncoder;
+    private final AsymmetricCipherEngines asymmetricCipherEngine;
 
-    private AsymmetricCiphers(final CipherEngine cipherEngine, final EncoderType encoderType) {
-        this.encoderType = encoderType;
-        this.cipherEngine = cipherEngine;
+    private AsymmetricCiphers(final AsymmetricCipherEngines asymmetricCipherEngine,
+            final AsymmetricEncoders asymmetricEncoder) {
+        this.asymmetricEncoder = asymmetricEncoder;
+        this.asymmetricCipherEngine = asymmetricCipherEngine;
     }
 
     /**
@@ -110,9 +135,9 @@ public final class AsymmetricCiphers {
             sb.append("], Message [");
             sb.append(messageData);
             sb.append("], Cipher Engine [");
-            sb.append(cipherEngine);
+            sb.append(asymmetricCipherEngine);
             sb.append("], Encoder Type[");
-            sb.append(encoderType);
+            sb.append(asymmetricEncoder);
             sb.append("]");
             LOG.debug(sb.toString());
         }
@@ -126,37 +151,18 @@ public final class AsymmetricCiphers {
         }
 
         final AsymmetricBlockCipher cipherAndEncoding = getCipherAndEncoding();
-        final AsymmetricKeyParameter key = PrivateKeyFactory.createKey(keyData);
+        final AsymmetricKeyParameter key = getKey(mode, keyData);
 
         cipherAndEncoding.init(ENCRYPT.equals(mode), key);
 
         return cipherAndEncoding.processBlock(messageData, 0, messageData.length);
     }
 
+    private AsymmetricKeyParameter getKey(final CipherMode mode, final byte[] keyData) throws IOException {
+        return ENCRYPT.equals(mode) ? PrivateKeyFactory.createKey(keyData) : PublicKeyFactory.createKey(keyData);
+    }
+
     private AsymmetricBlockCipher getCipherAndEncoding() throws UnsupportedCipherEncoder, UnsupportedCipherEngine {
-        return getEncoder(encoderType, getCipher(cipherEngine));
-    }
-
-    private static AsymmetricBlockCipher getCipher(final CipherEngine cipherEngine) throws UnsupportedCipherEngine {
-        switch (cipherEngine) {
-        case ElGamalEngine:
-            return new ElGamalEngine();
-        case NaccacheSternEngine:
-            return new NaccacheSternEngine();
-        case RSAEngine:
-            return new RSAEngine();
-        default:
-            throw new UnsupportedCipherEngine("Cipher engine not supported.");
-        }
-    }
-
-    private static AsymmetricBlockCipher getEncoder(final EncoderType encoderType,
-            final AsymmetricBlockCipher cipherEngine) throws UnsupportedCipherEncoder {
-        switch (encoderType) {
-        case PKCS1:
-            return new PKCS1Encoding(cipherEngine);
-        default:
-            throw new UnsupportedCipherEncoder("Encoder type not supported.");
-        }
+        return asymmetricEncoder.getInstance(asymmetricCipherEngine.getInstance());
     }
 }

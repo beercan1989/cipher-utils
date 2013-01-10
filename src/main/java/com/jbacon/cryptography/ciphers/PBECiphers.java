@@ -4,11 +4,11 @@ import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.AESFa
 import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherEngine.Twofish;
 import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.DECRYPT;
 import static com.jbacon.cryptography.ciphers.AbstractCiphers.CipherMode.ENCRYPT;
-import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.MD5;
-import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA1;
-import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA256;
-import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.SHA512;
-import static com.jbacon.cryptography.ciphers.PBECiphers.DigestType.Whirlpool;
+import static com.jbacon.cryptography.ciphers.PBECiphers.Digest.MD5;
+import static com.jbacon.cryptography.ciphers.PBECiphers.Digest.SHA1;
+import static com.jbacon.cryptography.ciphers.PBECiphers.Digest.SHA256;
+import static com.jbacon.cryptography.ciphers.PBECiphers.Digest.SHA512;
+import static com.jbacon.cryptography.ciphers.PBECiphers.Digest.Whirlpool;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
@@ -57,7 +57,7 @@ public final class PBECiphers extends AbstractCiphers {
 
     private static final int ITERATION_COUNT = 50;
 
-    protected static enum DigestType {
+    protected static enum Digest {
         @Deprecated
         MD5, //
         @Deprecated
@@ -65,13 +65,30 @@ public final class PBECiphers extends AbstractCiphers {
         SHA256, //
         SHA512, //
         Whirlpool;
+
+        protected ExtendedDigest getInstance() throws UnsupportedCipherDigestType {
+            switch (this) {
+            case MD5:
+                return new MD5Digest();
+            case SHA1:
+                return new SHA1Digest();
+            case SHA256:
+                return new SHA256Digest();
+            case SHA512:
+                return new SHA512Digest();
+            case Whirlpool:
+                return new WhirlpoolDigest();
+            default:
+                throw new UnsupportedCipherDigestType("Digest not supported.");
+            }
+        }
     }
 
-    private final DigestType digestType;
+    private final Digest digest;
 
-    private PBECiphers(final CipherEngine cipherEngine, final DigestType digestType) {
+    private PBECiphers(final CipherEngine cipherEngine, final Digest digest) {
         super(cipherEngine);
-        this.digestType = digestType;
+        this.digest = digest;
     }
 
     /**
@@ -146,7 +163,7 @@ public final class PBECiphers extends AbstractCiphers {
 
     private CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount,
             final int keySize, final int ivSize) throws UnsupportedCipherDigestType {
-        final PBEParametersGenerator generator = new PKCS12ParametersGenerator(getDigest(digestType));
+        final PBEParametersGenerator generator = new PKCS12ParametersGenerator(digest.getInstance());
         final byte[] key = PBEParametersGenerator.PKCS12PasswordToBytes(password);
         CipherParameters param;
 
@@ -163,22 +180,5 @@ public final class PBECiphers extends AbstractCiphers {
         }
 
         return param;
-    }
-
-    private static ExtendedDigest getDigest(final DigestType digestType) throws UnsupportedCipherDigestType {
-        switch (digestType) {
-        case MD5:
-            return new MD5Digest();
-        case SHA1:
-            return new SHA1Digest();
-        case SHA256:
-            return new SHA256Digest();
-        case SHA512:
-            return new SHA512Digest();
-        case Whirlpool:
-            return new WhirlpoolDigest();
-        default:
-            throw new UnsupportedCipherDigestType("Digest not supported.");
-        }
     }
 }

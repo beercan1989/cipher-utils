@@ -30,6 +30,21 @@ abstract class AbstractCiphers {
         AESMedium, //
         AESSlow, //
         Twofish; //
+
+        protected BlockCipher getInstance() throws UnsupportedCipherEngine {
+            switch (this) {
+            case AESFast:
+                return new AESFastEngine();
+            case AESMedium:
+                return new AESEngine();
+            case AESSlow:
+                return new AESLightEngine();
+            case Twofish:
+                return new TwofishEngine();
+            default:
+                throw new UnsupportedCipherEngine("Cipher engine not supported.");
+            }
+        }
     }
 
     private static final Log LOG = LogFactory.getLog(AbstractCiphers.class);
@@ -56,7 +71,7 @@ abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(getCipherEngine(cipherEngine));
+        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine.getInstance());
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
         cipher.reset();
@@ -72,21 +87,6 @@ abstract class AbstractCiphers {
         return output;
     }
 
-    private static BlockCipher getCipherEngine(final CipherEngine cipherEngine) throws UnsupportedCipherEngine {
-        switch (cipherEngine) {
-        case AESFast:
-            return new AESFastEngine();
-        case AESMedium:
-            return new AESEngine();
-        case AESSlow:
-            return new AESLightEngine();
-        case Twofish:
-            return new TwofishEngine();
-        default:
-            throw new UnsupportedCipherEngine("Cipher engine not supported.");
-        }
-    }
-
     protected static final void validateInputs(final byte[] key, final byte[] input) {
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
@@ -98,7 +98,9 @@ abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        validateInputs(input);
+        if (input == null) {
+            throw new NullPointerException("Provided cipher input was null.");
+        }
 
         if (key == null) {
             throw new NullPointerException("Provided cipher key was null.");
@@ -121,7 +123,9 @@ abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        validateInputs(input);
+        if (input == null) {
+            throw new NullPointerException("Provided cipher input was null.");
+        }
 
         if (salt == null) {
             throw new NullPointerException("Provided salt was null.");
@@ -133,12 +137,6 @@ abstract class AbstractCiphers {
 
         if (password == null) {
             throw new NullPointerException("Provided password was null.");
-        }
-    }
-
-    private static void validateInputs(final byte[] input) {
-        if (input == null) {
-            throw new NullPointerException("Provided cipher input was null.");
         }
     }
 
