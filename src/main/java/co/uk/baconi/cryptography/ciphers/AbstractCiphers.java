@@ -1,4 +1,4 @@
-package com.jbacon.cryptography.ciphers;
+package co.uk.baconi.cryptography.ciphers;
 
 import java.util.Arrays;
 
@@ -16,8 +16,6 @@ import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
-import com.jbacon.cryptography.ciphers.errors.UnsupportedCipherEngine;
-
 abstract class AbstractCiphers {
 
     protected static enum CipherMode {
@@ -26,25 +24,35 @@ abstract class AbstractCiphers {
     }
 
     protected static enum CipherEngine {
-        AESFast, //
-        AESMedium, //
-        AESSlow, //
-        Twofish; //
-
-        protected BlockCipher getInstance() throws UnsupportedCipherEngine {
-            switch (this) {
-            case AESFast:
+        AESFast {
+            @Override
+            public BlockCipher getInstance() {
                 return new AESFastEngine();
-            case AESMedium:
-                return new AESEngine();
-            case AESSlow:
-                return new AESLightEngine();
-            case Twofish:
-                return new TwofishEngine();
-            default:
-                throw new UnsupportedCipherEngine("Cipher engine not supported.");
             }
-        }
+        },
+
+        AESMedium {
+            @Override
+            public BlockCipher getInstance() {
+                return new AESEngine();
+            }
+        },
+
+        AESSlow {
+            @Override
+            public BlockCipher getInstance() {
+                return new AESLightEngine();
+            }
+        },
+
+        Twofish {
+            @Override
+            public BlockCipher getInstance() {
+                return new TwofishEngine();
+            }
+        };
+
+        public abstract BlockCipher getInstance();
     }
 
     private static final Log LOG = LogFactory.getLog(AbstractCiphers.class);
@@ -56,7 +64,7 @@ abstract class AbstractCiphers {
     }
 
     protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException, UnsupportedCipherEngine {
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Mode [");
@@ -98,17 +106,12 @@ abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        if (input == null) {
-            throw new NullPointerException("Provided cipher input was null.");
-        }
+        if (input == null) { throw new NullPointerException("Provided cipher input was null."); }
 
-        if (key == null) {
-            throw new NullPointerException("Provided cipher key was null.");
-        }
+        if (key == null) { throw new NullPointerException("Provided cipher key was null."); }
     }
 
-    protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv,
-            final byte[] input) {
+    protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) {
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Password [");
@@ -123,21 +126,13 @@ abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        if (input == null) {
-            throw new NullPointerException("Provided cipher input was null.");
-        }
+        if (input == null) { throw new NullPointerException("Provided cipher input was null."); }
 
-        if (salt == null) {
-            throw new NullPointerException("Provided salt was null.");
-        }
+        if (salt == null) { throw new NullPointerException("Provided salt was null."); }
 
-        if (iv == null) {
-            throw new NullPointerException("Provided initialization vector was null.");
-        }
+        if (iv == null) { throw new NullPointerException("Provided initialization vector was null."); }
 
-        if (password == null) {
-            throw new NullPointerException("Provided password was null.");
-        }
+        if (password == null) { throw new NullPointerException("Provided password was null."); }
     }
 
     private static StringBuilder mask(final long length) {

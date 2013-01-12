@@ -1,4 +1,4 @@
-package com.jbacon.cryptography;
+package co.uk.baconi.cryptography;
 
 public enum CipherKeySize {
     KS_128(128), //

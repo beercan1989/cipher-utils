@@ -1,4 +1,4 @@
-package com.jbacon.cryptography.utils;
+package co.uk.baconi.cryptography.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
