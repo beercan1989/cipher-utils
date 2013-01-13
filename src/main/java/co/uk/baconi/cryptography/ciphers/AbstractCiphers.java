@@ -4,63 +4,23 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.engines.AESFastEngine;
-import org.bouncycastle.crypto.engines.AESLightEngine;
-import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
-abstract class AbstractCiphers {
+import co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines;
 
-    protected static enum CipherMode {
-        ENCRYPT, //
-        DECRYPT; //
-    }
-
-    protected static enum CipherEngine {
-        AESFast {
-            @Override
-            public BlockCipher getInstance() {
-                return new AESFastEngine();
-            }
-        },
-
-        AESMedium {
-            @Override
-            public BlockCipher getInstance() {
-                return new AESEngine();
-            }
-        },
-
-        AESSlow {
-            @Override
-            public BlockCipher getInstance() {
-                return new AESLightEngine();
-            }
-        },
-
-        Twofish {
-            @Override
-            public BlockCipher getInstance() {
-                return new TwofishEngine();
-            }
-        };
-
-        public abstract BlockCipher getInstance();
-    }
+public abstract class AbstractCiphers {
 
     private static final Log LOG = LogFactory.getLog(AbstractCiphers.class);
 
-    private final CipherEngine cipherEngine;
+    private final SymmetricCipherEngines symmetricCipherEngine;
 
-    protected AbstractCiphers(final CipherEngine cipherEngine) {
-        this.cipherEngine = cipherEngine;
+    protected AbstractCiphers(final SymmetricCipherEngines symmetricCipherEngine) {
+        this.symmetricCipherEngine = symmetricCipherEngine;
     }
 
     protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
@@ -74,12 +34,12 @@ abstract class AbstractCiphers {
             sb.append("], Cipher Parameters [");
             sb.append(cipherParams);
             sb.append("], Cipher Engine [");
-            sb.append(cipherEngine);
+            sb.append(symmetricCipherEngine);
             sb.append("]");
             LOG.debug(sb.toString());
         }
 
-        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(cipherEngine.getInstance());
+        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(symmetricCipherEngine.getInstance());
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
         cipher.reset();
@@ -141,5 +101,9 @@ abstract class AbstractCiphers {
             sb.append("*");
         }
         return sb;
+    }
+
+    protected SymmetricCipherEngines getCipherEngine() {
+        return symmetricCipherEngine;
     }
 }

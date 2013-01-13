@@ -1,15 +1,14 @@
-package co.uk.baconi.cryptography.ciphers;
+package co.uk.baconi.cryptography.ciphers.symmetric;
 
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.AESFast;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.AESMedium;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.AESSlow;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.Twofish;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherMode.DECRYPT;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherMode.ENCRYPT;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.DECRYPT;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.ENCRYPT;
 
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.params.KeyParameter;
+
+import co.uk.baconi.cryptography.ciphers.AbstractCiphers;
+import co.uk.baconi.cryptography.ciphers.CipherMode;
 
 /**
  * This class provides easy access to certain Ciphers available in
@@ -17,20 +16,20 @@ import org.bouncycastle.crypto.params.KeyParameter;
  * <br />
  * Please Note:<br />
  * The AES ciphers can only handle key size's of 128/192/256 bits.<br />
- * The Twofish cipher cannot have a key size smaller than 64 bits or larger than
+ * The TWOFISH cipher cannot have a key size smaller than 64 bits or larger than
  * 256 bits.
  * 
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
  */
 public final class SymmetricCiphers extends AbstractCiphers {
-    public static final SymmetricCiphers AES_FAST = new SymmetricCiphers(AESFast);
-    public static final SymmetricCiphers AES = new SymmetricCiphers(AESMedium);
-    public static final SymmetricCiphers AES_SLOW = new SymmetricCiphers(AESSlow);
-    public static final SymmetricCiphers TWOFISH = new SymmetricCiphers(Twofish);
+    public static final SymmetricCiphers AES_FAST = new SymmetricCiphers(SymmetricCipherEngines.AES_FAST);
+    public static final SymmetricCiphers AES = new SymmetricCiphers(SymmetricCipherEngines.AES_MEDIUM);
+    public static final SymmetricCiphers AES_SLOW = new SymmetricCiphers(SymmetricCipherEngines.AES_SLOW);
+    public static final SymmetricCiphers TWOFISH = new SymmetricCiphers(SymmetricCipherEngines.TWOFISH);
 
-    private SymmetricCiphers(final CipherEngine cipherEngine) {
-        super(cipherEngine);
+    private SymmetricCiphers(final SymmetricCipherEngines symmetricCipherEngine) {
+        super(symmetricCipherEngine);
     }
 
     /**
@@ -88,4 +87,22 @@ public final class SymmetricCiphers extends AbstractCiphers {
         return doCipher(mode, input, keyParameter);
     }
 
+    @Override
+    public String toString() {
+        return toString(this);
+    }
+
+    public static String toString(final SymmetricCiphers symmetricCipher) {
+        return symmetricCipher.getCipherEngine().name();
+    }
+
+    public static SymmetricCiphers fromString(final String string) {
+        if (string == null) { throw new IllegalArgumentException(); }
+
+        final SymmetricCipherEngines symmetricCipherEngine = SymmetricCipherEngines.valueOf(string);
+
+        if (symmetricCipherEngine == null) { throw new IllegalArgumentException(); }
+
+        return new SymmetricCiphers(symmetricCipherEngine);
+    }
 }

@@ -1,11 +1,11 @@
-package co.uk.baconi.cryptography.ciphers;
+package co.uk.baconi.cryptography.ciphers.asymmetric;
 
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.ElGamalEngine;
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.NaccacheSternEngine;
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.AsymmetricCipherEngines.RSAEngine;
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.AsymmetricEncoders.PKCS1;
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.CipherMode.DECRYPT;
-import static co.uk.baconi.cryptography.ciphers.AsymmetricCiphers.CipherMode.ENCRYPT;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.DECRYPT;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.ENCRYPT;
+import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines.EL_GAMAL;
+import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines.NACCACHE_STERN;
+import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines.RSA;
+import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricEncodings.PKCS1;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,15 +15,11 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.encodings.ISO9796d1Encoding;
-import org.bouncycastle.crypto.encodings.OAEPEncoding;
-import org.bouncycastle.crypto.encodings.PKCS1Encoding;
-import org.bouncycastle.crypto.engines.ElGamalEngine;
-import org.bouncycastle.crypto.engines.NaccacheSternEngine;
-import org.bouncycastle.crypto.engines.RSAEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
+
+import co.uk.baconi.cryptography.ciphers.CipherMode;
 
 /**
  * This class provides easy access to certain Asymmetric Ciphers available in
@@ -35,69 +31,17 @@ import org.bouncycastle.crypto.util.PublicKeyFactory;
  */
 public final class AsymmetricCiphers {
 
-    public static final AsymmetricCiphers ELGAMAL_PKCS1 = new AsymmetricCiphers(ElGamalEngine, PKCS1);
-    public static final AsymmetricCiphers NACCACHE_STERN_PKCS1 = new AsymmetricCiphers(NaccacheSternEngine, PKCS1);
-    public static final AsymmetricCiphers RSA_PKCS1 = new AsymmetricCiphers(RSAEngine, PKCS1);
+    public static final AsymmetricCiphers ELGAMAL_PKCS1 = new AsymmetricCiphers(EL_GAMAL, PKCS1);
+    public static final AsymmetricCiphers NACCACHE_STERN_PKCS1 = new AsymmetricCiphers(NACCACHE_STERN, PKCS1);
+    public static final AsymmetricCiphers RSA_PKCS1 = new AsymmetricCiphers(RSA, PKCS1);
 
+    private static final String TO_STRING_DIVIDER = ";";
     private static final Log LOG = LogFactory.getLog(AsymmetricCiphers.class);
 
-    protected static enum CipherMode {
-        ENCRYPT, //
-        DECRYPT; //
-    }
-
-    protected static enum AsymmetricCipherEngines {
-        ElGamalEngine {
-            @Override
-            public AsymmetricBlockCipher getInstance() {
-                return new ElGamalEngine();
-            }
-        }, //
-        NaccacheSternEngine {
-            @Override
-            public AsymmetricBlockCipher getInstance() {
-                return new NaccacheSternEngine();
-            }
-        }, //
-        RSAEngine {
-            @Override
-            public AsymmetricBlockCipher getInstance() {
-                return new RSAEngine();
-            }
-        };
-
-        public abstract AsymmetricBlockCipher getInstance();
-    }
-
-    protected static enum AsymmetricEncoders {
-        OAEP {
-            @Override
-            public AsymmetricBlockCipher getInstance(final AsymmetricBlockCipher cipherEngine) {
-                return new OAEPEncoding(cipherEngine);
-            }
-        },
-
-        PKCS1 {
-            @Override
-            public AsymmetricBlockCipher getInstance(final AsymmetricBlockCipher cipherEngine) {
-                return new PKCS1Encoding(cipherEngine);
-            }
-        },
-
-        ISO9796d1 {
-            @Override
-            public AsymmetricBlockCipher getInstance(final AsymmetricBlockCipher cipherEngine) {
-                return new ISO9796d1Encoding(cipherEngine);
-            }
-        };
-
-        public abstract AsymmetricBlockCipher getInstance(final AsymmetricBlockCipher cipherEngine);
-    }
-
-    private final AsymmetricEncoders asymmetricEncoder;
+    private final AsymmetricEncodings asymmetricEncoder;
     private final AsymmetricCipherEngines asymmetricCipherEngine;
 
-    private AsymmetricCiphers(final AsymmetricCipherEngines asymmetricCipherEngine, final AsymmetricEncoders asymmetricEncoder) {
+    private AsymmetricCiphers(final AsymmetricCipherEngines asymmetricCipherEngine, final AsymmetricEncodings asymmetricEncoder) {
         this.asymmetricEncoder = asymmetricEncoder;
         this.asymmetricCipherEngine = asymmetricCipherEngine;
     }
@@ -184,5 +128,33 @@ public final class AsymmetricCiphers {
 
     private AsymmetricBlockCipher getCipherAndEncoding() {
         return asymmetricEncoder.getInstance(asymmetricCipherEngine.getInstance());
+    }
+
+    @Override
+    public String toString() {
+        return toString(this);
+    }
+
+    public static String toString(final AsymmetricCiphers asymmetricCipher) {
+        final StringBuilder toString = new StringBuilder();
+        toString.append(asymmetricCipher.asymmetricCipherEngine.name());
+        toString.append(TO_STRING_DIVIDER);
+        toString.append(asymmetricCipher.asymmetricEncoder.name());
+        return toString.toString();
+    }
+
+    public static AsymmetricCiphers fromString(final String string) {
+        if (string == null) { throw new IllegalArgumentException(); }
+
+        final String[] split = string.split(TO_STRING_DIVIDER);
+
+        if (split == null || split.length != 2) { throw new IllegalArgumentException(); }
+
+        final AsymmetricCipherEngines asymmetricCipherEngine = AsymmetricCipherEngines.valueOf(split[0]);
+        final AsymmetricEncodings asymmetricEncoder = AsymmetricEncodings.valueOf(split[1]);
+
+        if (asymmetricCipherEngine == null || asymmetricEncoder == null) { throw new IllegalArgumentException(); }
+
+        return new AsymmetricCiphers(asymmetricCipherEngine, asymmetricEncoder);
     }
 }

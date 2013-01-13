@@ -1,30 +1,27 @@
-package co.uk.baconi.cryptography.ciphers;
+package co.uk.baconi.cryptography.ciphers.pbe;
 
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.AESFast;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherEngine.Twofish;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherMode.DECRYPT;
-import static co.uk.baconi.cryptography.ciphers.AbstractCiphers.CipherMode.ENCRYPT;
-import static co.uk.baconi.cryptography.ciphers.PBECiphers.Digest.MD5;
-import static co.uk.baconi.cryptography.ciphers.PBECiphers.Digest.SHA1;
-import static co.uk.baconi.cryptography.ciphers.PBECiphers.Digest.SHA256;
-import static co.uk.baconi.cryptography.ciphers.PBECiphers.Digest.SHA512;
-import static co.uk.baconi.cryptography.ciphers.PBECiphers.Digest.Whirlpool;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.DECRYPT;
+import static co.uk.baconi.cryptography.ciphers.CipherMode.ENCRYPT;
+import static co.uk.baconi.cryptography.ciphers.pbe.Digests.MD5;
+import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA1;
+import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA256;
+import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA512;
+import static co.uk.baconi.cryptography.ciphers.pbe.Digests.WHIRLPOOL;
+import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.AES_FAST;
+import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.TWOFISH;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.ExtendedDigest;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.digests.MD5Digest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.digests.SHA512Digest;
-import org.bouncycastle.crypto.digests.WhirlpoolDigest;
 import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import co.uk.baconi.cryptography.CipherKeySize;
+import co.uk.baconi.cryptography.ciphers.AbstractCiphers;
+import co.uk.baconi.cryptography.ciphers.CipherMode;
+import co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines;
 
 /**
  * This class provides easy access to a PBE solution built up on the
@@ -39,68 +36,30 @@ import co.uk.baconi.cryptography.CipherKeySize;
 public final class PBECiphers extends AbstractCiphers {
 
     @Deprecated
-    public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(AESFast, MD5);
+    public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(AES_FAST, MD5);
     @Deprecated
-    public static final PBECiphers PBE_SHA1_AES_CBC = new PBECiphers(AESFast, SHA1);
-    public static final PBECiphers PBE_SHA256_AES_CBC = new PBECiphers(AESFast, SHA256);
-    public static final PBECiphers PBE_SHA512_AES_CBC = new PBECiphers(AESFast, SHA512);
-    public static final PBECiphers PBE_WHIRLPOOL_AES_CBC = new PBECiphers(AESFast, Whirlpool);
+    public static final PBECiphers PBE_SHA1_AES_CBC = new PBECiphers(AES_FAST, SHA1);
+    public static final PBECiphers PBE_SHA256_AES_CBC = new PBECiphers(AES_FAST, SHA256);
+    public static final PBECiphers PBE_SHA512_AES_CBC = new PBECiphers(AES_FAST, SHA512);
+    public static final PBECiphers PBE_WHIRLPOOL_AES_CBC = new PBECiphers(AES_FAST, WHIRLPOOL);
 
     @Deprecated
-    public static final PBECiphers PBE_MD5_TWOFISH_CBC = new PBECiphers(Twofish, MD5);
+    public static final PBECiphers PBE_MD5_TWOFISH_CBC = new PBECiphers(TWOFISH, MD5);
     @Deprecated
-    public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(Twofish, SHA1);
-    public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(Twofish, SHA256);
-    public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(Twofish, SHA512);
-    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(Twofish, Whirlpool);
+    public static final PBECiphers PBE_SHA1_TWOFISH_CBC = new PBECiphers(TWOFISH, SHA1);
+    public static final PBECiphers PBE_SHA256_TWOFISH_CBC = new PBECiphers(TWOFISH, SHA256);
+    public static final PBECiphers PBE_SHA512_TWOFISH_CBC = new PBECiphers(TWOFISH, SHA512);
+    public static final PBECiphers PBE_WHIRLPOOL_TWOFISH_CBC = new PBECiphers(TWOFISH, WHIRLPOOL);
 
     private static final int ITERATION_COUNT = 50;
+    private static final String CBC = ";CBC";
+    private static final String PBE = "PBE;";
+    private static final String TO_STRING_DIVIDER = ";";
 
-    protected static enum Digest {
-        @Deprecated
-        MD5 {
-            @Override
-            protected ExtendedDigest getInstance() {
-                return new MD5Digest();
-            }
-        },
+    private final Digests digest;
 
-        @Deprecated
-        SHA1 {
-            @Override
-            protected ExtendedDigest getInstance() {
-                return new SHA1Digest();
-            }
-        },
-
-        SHA256 {
-            @Override
-            protected ExtendedDigest getInstance() {
-                return new SHA256Digest();
-            }
-        },
-
-        SHA512 {
-            @Override
-            protected ExtendedDigest getInstance() {
-                return new SHA512Digest();
-            }
-        },
-
-        Whirlpool {
-            @Override
-            protected ExtendedDigest getInstance() {
-                return new WhirlpoolDigest();
-            }
-        };
-
-        protected abstract ExtendedDigest getInstance();
-    }
-
-    private final Digest digest;
-
-    private PBECiphers(final CipherEngine cipherEngine, final Digest digest) {
-        super(cipherEngine);
+    private PBECiphers(final SymmetricCipherEngines symmetricCipherEngine, final Digests digest) {
+        super(symmetricCipherEngine);
         this.digest = digest;
     }
 
@@ -127,7 +86,7 @@ public final class PBECiphers extends AbstractCiphers {
      * @exception IllegalStateException
      *                if the cipher isn't initialised.
      * @exception UnsupportedCipherDigestType
-     *                if the Digest type is not currently supported.
+     *                if the Digests type is not currently supported.
      * @exception UnsupportedCipherEngine
      *                if the Cipher type is not currently supported.
      */
@@ -159,7 +118,7 @@ public final class PBECiphers extends AbstractCiphers {
      * @exception IllegalStateException
      *                if the cipher isn't initialised.
      * @exception UnsupportedCipherDigestType
-     *                if the Digest type is not currently supported.
+     *                if the Digests type is not currently supported.
      * @exception UnsupportedCipherEngine
      *                if the Cipher type is not currently supported.
      */
@@ -210,5 +169,35 @@ public final class PBECiphers extends AbstractCiphers {
         }
 
         return param;
+    }
+
+    @Override
+    public String toString() {
+        return toString(this);
+    }
+
+    public static String toString(final PBECiphers pbeCipher) {
+        final StringBuilder toString = new StringBuilder();
+        toString.append(PBE);
+        toString.append(pbeCipher.digest.name());
+        toString.append(TO_STRING_DIVIDER);
+        toString.append(pbeCipher.getCipherEngine().name());
+        toString.append(CBC);
+        return toString.toString();
+    }
+
+    public static PBECiphers fromString(final String string) {
+        if (string == null) { throw new IllegalArgumentException(); }
+
+        final String[] split = string.split(TO_STRING_DIVIDER);
+
+        if (split == null || split.length != 4) { throw new IllegalArgumentException(); }
+
+        final SymmetricCipherEngines symmetricCipherEngine = SymmetricCipherEngines.valueOf(split[2]);
+        final Digests digest = Digests.valueOf(split[1]);
+
+        if (symmetricCipherEngine == null || digest == null) { throw new IllegalArgumentException(); }
+
+        return new PBECiphers(symmetricCipherEngine, digest);
     }
 }
