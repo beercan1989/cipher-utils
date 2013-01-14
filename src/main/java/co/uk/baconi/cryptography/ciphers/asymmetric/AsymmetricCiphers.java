@@ -22,8 +22,7 @@ import org.bouncycastle.crypto.util.PublicKeyFactory;
 import co.uk.baconi.cryptography.ciphers.CipherMode;
 
 /**
- * This class provides easy access to certain Asymmetric Ciphers available in
- * BouncyCastle's lightweight api.<br />
+ * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's lightweight api.<br />
  * <br />
  * 
  * @author JBacon
@@ -41,7 +40,8 @@ public final class AsymmetricCiphers {
     private final AsymmetricEncodings asymmetricEncoder;
     private final AsymmetricCipherEngines asymmetricCipherEngine;
 
-    private AsymmetricCiphers(final AsymmetricCipherEngines asymmetricCipherEngine, final AsymmetricEncodings asymmetricEncoder) {
+    private AsymmetricCiphers(final AsymmetricCipherEngines asymmetricCipherEngine,
+            final AsymmetricEncodings asymmetricEncoder) {
         this.asymmetricEncoder = asymmetricEncoder;
         this.asymmetricCipherEngine = asymmetricCipherEngine;
     }
@@ -49,51 +49,39 @@ public final class AsymmetricCiphers {
     /**
      * Encrypts the message using the provided key.
      * 
-     * @param keyData
-     *            the encryption key.
-     * @param messageData
-     *            the message to encrypt.
+     * @param keyData the encryption key.
+     * @param messageData the message to encrypt.
      * @return the encrypted message.
-     * @throws InvalidCipherTextException
-     *             - when the data encrypts improperly.
-     * @throws DataLengthException
-     *             - when the input data is too large for the cipher.
-     * @throws IOException
-     *             - on an error decoding the key
-     * @throws UnsupportedCipherEngine
-     *             - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder
-     *             - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException - when the data encrypts improperly.
+     * @throws DataLengthException - when the input data is too large for the cipher.
+     * @throws IOException - on an error decoding the key
+     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
      */
-    public byte[] encrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException, IOException {
+    public byte[] encrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
+            IOException {
         return doCipher(ENCRYPT, keyData, messageData);
     }
 
     /**
      * Decrypts the message using the provided key.
      * 
-     * @param keyData
-     *            the decryption key.
-     * @param messageData
-     *            the message to decrypt.
+     * @param keyData the decryption key.
+     * @param messageData the message to decrypt.
      * @return the decrypted message.
-     * @throws InvalidCipherTextException
-     *             - when the data decrypts improperly.
-     * @throws DataLengthException
-     *             - when the input data is too large for the cipher.
-     * @throws IOException
-     *             - on an error decoding the key
-     * @throws UnsupportedCipherEngine
-     *             - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder
-     *             - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException - when the data decrypts improperly.
+     * @throws DataLengthException - when the input data is too large for the cipher.
+     * @throws IOException - on an error decoding the key
+     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
      */
-    public byte[] decrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException, IOException {
+    public byte[] decrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
+            IOException {
         return doCipher(DECRYPT, keyData, messageData);
     }
 
-    private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
-            IOException {
+    private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)
+            throws InvalidCipherTextException, IOException {
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Mode [");
@@ -110,14 +98,18 @@ public final class AsymmetricCiphers {
             LOG.debug(sb.toString());
         }
 
-        if (keyData == null) { throw new NullPointerException("Provided cipher key was null."); }
+        if (keyData == null) {
+            throw new NullPointerException("Provided cipher key was null.");
+        }
 
-        if (messageData == null) { throw new NullPointerException("Provided message data was null."); }
+        if (messageData == null) {
+            throw new NullPointerException("Provided message data was null.");
+        }
 
         final AsymmetricBlockCipher cipherAndEncoding = getCipherAndEncoding();
         final AsymmetricKeyParameter key = getKey(mode, keyData);
 
-        cipherAndEncoding.init(ENCRYPT.equals(mode), key);
+        cipherAndEncoding.init(mode.isEncrypt(), key);
 
         return cipherAndEncoding.processBlock(messageData, 0, messageData.length);
     }
@@ -140,20 +132,32 @@ public final class AsymmetricCiphers {
         toString.append(asymmetricCipher.asymmetricCipherEngine.name());
         toString.append(TO_STRING_DIVIDER);
         toString.append(asymmetricCipher.asymmetricEncoder.name());
-        return toString.toString();
+        final String string = toString.toString();
+
+        LOG.debug("toString:" + string);
+
+        return string;
     }
 
     public static AsymmetricCiphers fromString(final String string) {
-        if (string == null) { throw new IllegalArgumentException(); }
+        LOG.debug("fromString:" + string);
+
+        if (string == null) {
+            throw new IllegalArgumentException();
+        }
 
         final String[] split = string.split(TO_STRING_DIVIDER);
 
-        if (split == null || split.length != 2) { throw new IllegalArgumentException(); }
+        if (split == null || split.length != 2) {
+            throw new IllegalArgumentException();
+        }
 
         final AsymmetricCipherEngines asymmetricCipherEngine = AsymmetricCipherEngines.valueOf(split[0]);
         final AsymmetricEncodings asymmetricEncoder = AsymmetricEncodings.valueOf(split[1]);
 
-        if (asymmetricCipherEngine == null || asymmetricEncoder == null) { throw new IllegalArgumentException(); }
+        if (asymmetricCipherEngine == null || asymmetricEncoder == null) {
+            throw new IllegalArgumentException();
+        }
 
         return new AsymmetricCiphers(asymmetricCipherEngine, asymmetricEncoder);
     }

@@ -43,7 +43,7 @@ public abstract class AbstractCiphers {
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
 
         cipher.reset();
-        cipher.init(CipherMode.ENCRYPT.equals(mode), cipherParams);
+        cipher.init(mode.isEncrypt(), cipherParams);
 
         final byte[] outputBuffer = new byte[cipher.getOutputSize(input.length)];
         int length = cipher.processBytes(input, 0, input.length, outputBuffer, 0);
@@ -66,12 +66,17 @@ public abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        if (input == null) { throw new NullPointerException("Provided cipher input was null."); }
+        if (input == null) {
+            throw new NullPointerException("Provided cipher input was null.");
+        }
 
-        if (key == null) { throw new NullPointerException("Provided cipher key was null."); }
+        if (key == null) {
+            throw new NullPointerException("Provided cipher key was null.");
+        }
     }
 
-    protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) {
+    protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv,
+            final byte[] input) {
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Password [");
@@ -86,13 +91,21 @@ public abstract class AbstractCiphers {
             LOG.debug(sb.toString());
         }
 
-        if (input == null) { throw new NullPointerException("Provided cipher input was null."); }
+        if (input == null) {
+            throw new NullPointerException("Provided cipher input was null.");
+        }
 
-        if (salt == null) { throw new NullPointerException("Provided salt was null."); }
+        if (salt == null) {
+            throw new NullPointerException("Provided salt was null.");
+        }
 
-        if (iv == null) { throw new NullPointerException("Provided initialization vector was null."); }
+        if (iv == null) {
+            throw new NullPointerException("Provided initialization vector was null.");
+        }
 
-        if (password == null) { throw new NullPointerException("Provided password was null."); }
+        if (password == null) {
+            throw new NullPointerException("Provided password was null.");
+        }
     }
 
     private static StringBuilder mask(final long length) {

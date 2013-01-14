@@ -10,6 +10,8 @@ import static co.uk.baconi.cryptography.ciphers.pbe.Digests.WHIRLPOOL;
 import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.AES_FAST;
 import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.TWOFISH;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -24,16 +26,17 @@ import co.uk.baconi.cryptography.ciphers.CipherMode;
 import co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines;
 
 /**
- * This class provides easy access to a PBE solution built up on the
- * BouncyCastle lightweight api.
+ * This class provides easy access to a PBE solution built up on the BouncyCastle lightweight api.
  * 
- * The Ciphers used in the PBE's have been set to 256bit keys, as this is the
- * highest supported key size using the BouncyCastle's lightweight api.
+ * The Ciphers used in the PBE's have been set to 256bit keys, as this is the highest supported key size using the
+ * BouncyCastle's lightweight api.
  * 
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
  */
 public final class PBECiphers extends AbstractCiphers {
+
+    private static final Log LOG = LogFactory.getLog(PBECiphers.class);
 
     @Deprecated
     public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(AES_FAST, MD5);
@@ -66,69 +69,47 @@ public final class PBECiphers extends AbstractCiphers {
     /**
      * Encrypts the input using PBE.
      * 
-     * @param password
-     *            the users password used to generate the cipher key.
-     * @param salt
-     *            an array of random bytes that will be combined with the
-     *            password to generate the cipher key.
-     * @param iv
-     *            the initialisation vector, a random array of bytes. Similar to
-     *            salt in its function.
-     * @param input
-     *            The data to encrypt.
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialisation vector, a random array of bytes. Similar to salt in its function.
+     * @param input The data to encrypt.
      * 
      * @return The encrypted data.
      * 
-     * @exception InvalidCipherTextException
-     *                if padding is expected and not found.
-     * @exception DataLengthException
-     *                if there isn't enough space in out.
-     * @exception IllegalStateException
-     *                if the cipher isn't initialised.
-     * @exception UnsupportedCipherDigestType
-     *                if the Digests type is not currently supported.
-     * @exception UnsupportedCipherEngine
-     *                if the Cipher type is not currently supported.
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherDigestType if the Digests type is not currently supported.
+     * @exception UnsupportedCipherEngine if the Cipher type is not currently supported.
      */
-    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException,
-            IllegalStateException, InvalidCipherTextException {
+    public final byte[] encrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         return doCipher(ENCRYPT, password, salt, iv, input);
     }
 
     /**
      * Decrypts the input using PBE.
      * 
-     * @param password
-     *            the users password used to generate the cipher key.
-     * @param salt
-     *            an array of random bytes that will be combined with the
-     *            password to generate the cipher key.
-     * @param iv
-     *            the initialisation vector, a random array of bytes. Similar to
-     *            salt in its function.
-     * @param input
-     *            the data to decrypt using the password, salt and iv.
+     * @param password the users password used to generate the cipher key.
+     * @param salt an array of random bytes that will be combined with the password to generate the cipher key.
+     * @param iv the initialisation vector, a random array of bytes. Similar to salt in its function.
+     * @param input the data to decrypt using the password, salt and iv.
      * 
      * @return the decrypted data.
      * 
-     * @exception InvalidCipherTextException
-     *                if padding is expected and not found.
-     * @exception DataLengthException
-     *                if there isn't enough space in out.
-     * @exception IllegalStateException
-     *                if the cipher isn't initialised.
-     * @exception UnsupportedCipherDigestType
-     *                if the Digests type is not currently supported.
-     * @exception UnsupportedCipherEngine
-     *                if the Cipher type is not currently supported.
+     * @exception InvalidCipherTextException if padding is expected and not found.
+     * @exception DataLengthException if there isn't enough space in out.
+     * @exception IllegalStateException if the cipher isn't initialised.
+     * @exception UnsupportedCipherDigestType if the Digests type is not currently supported.
+     * @exception UnsupportedCipherEngine if the Cipher type is not currently supported.
      */
-    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input) throws DataLengthException,
-            IllegalStateException, InvalidCipherTextException {
+    public final byte[] decrypt(final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
+            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         return doCipher(DECRYPT, password, salt, iv, input);
     }
 
-    private byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv, final byte[] input)
-            throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    private byte[] doCipher(final CipherMode mode, final char[] password, final byte[] salt, final byte[] iv,
+            final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
         validateInputs(password, salt, iv, input);
 
         final KeyParameter keyParam = new KeyParameter(generateEncryptionKey(password, salt, ITERATION_COUNT,
@@ -140,8 +121,10 @@ public final class PBECiphers extends AbstractCiphers {
         return output;
     }
 
-    private byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount, final int keySize) {
-        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize, CipherKeySize.KS_128.getKeySize());
+    private byte[] generateEncryptionKey(final char[] password, final byte[] salt, final int iterationCount,
+            final int keySize) {
+        final CipherParameters param = makePBEParameters(password, salt, iterationCount, keySize,
+                CipherKeySize.KS_128.getKeySize());
 
         if (param instanceof ParametersWithIV) {
             return ((KeyParameter) ((ParametersWithIV) param).getParameters()).getKey();
@@ -150,8 +133,8 @@ public final class PBECiphers extends AbstractCiphers {
         }
     }
 
-    private CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount, final int keySize,
-            final int ivSize) {
+    private CipherParameters makePBEParameters(final char[] password, final byte[] salt, final int iterationCount,
+            final int keySize, final int ivSize) {
         final PBEParametersGenerator generator = new PKCS12ParametersGenerator(digest.getInstance());
         final byte[] key = PBEParametersGenerator.PKCS12PasswordToBytes(password);
         CipherParameters param;
@@ -183,20 +166,32 @@ public final class PBECiphers extends AbstractCiphers {
         toString.append(TO_STRING_DIVIDER);
         toString.append(pbeCipher.getCipherEngine().name());
         toString.append(CBC);
-        return toString.toString();
+        final String string = toString.toString();
+
+        LOG.debug("toString:" + string);
+
+        return string;
     }
 
     public static PBECiphers fromString(final String string) {
-        if (string == null) { throw new IllegalArgumentException(); }
+        LOG.debug("fromString:" + string);
+
+        if (string == null) {
+            throw new IllegalArgumentException();
+        }
 
         final String[] split = string.split(TO_STRING_DIVIDER);
 
-        if (split == null || split.length != 4) { throw new IllegalArgumentException(); }
+        if (split == null || split.length != 4) {
+            throw new IllegalArgumentException();
+        }
 
         final SymmetricCipherEngines symmetricCipherEngine = SymmetricCipherEngines.valueOf(split[2]);
         final Digests digest = Digests.valueOf(split[1]);
 
-        if (symmetricCipherEngine == null || digest == null) { throw new IllegalArgumentException(); }
+        if (symmetricCipherEngine == null || digest == null) {
+            throw new IllegalArgumentException();
+        }
 
         return new PBECiphers(symmetricCipherEngine, digest);
     }
