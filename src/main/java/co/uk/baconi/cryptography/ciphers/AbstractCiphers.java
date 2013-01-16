@@ -116,7 +116,7 @@ public abstract class AbstractCiphers {
         return sb;
     }
 
-    protected SymmetricCipherEngines getCipherEngine() {
+    protected final SymmetricCipherEngines getCipherEngine() {
         return symmetricCipherEngine;
     }
 }

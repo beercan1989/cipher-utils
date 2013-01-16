@@ -19,16 +19,25 @@ import org.bouncycastle.crypto.params.ElGamalKeyGenerationParameters;
 import org.bouncycastle.crypto.params.NaccacheSternKeyGenerationParameters;
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
 
+/**
+ * @deprecated Use {@link AsymmetricCipherEngines} instead.
+ */
+@Deprecated
 public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBlockCipher, KeyPairGenerator extends AsymmetricCipherKeyPairGenerator, KeyPairParams extends KeyGenerationParameters> {
+
+    private static final String RSA_NAME = "RSA";
+    private static final String NACCACHE_STERN_NAME = "NaccacheStern";
+    private static final String EL_GAMAL_NAME = "ElGamal";
 
     private static final String SECURE_RANDOM_PROVIDER = "SUN";
     private static final String SECURE_RANDOM_IMPL = "SHA1PRNG";
 
     private static final Log LOG = LogFactory.getLog(AsymmetricCipherEnginesClassy.class);
 
-    public static final AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters> EL_GAMAL = new AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters>() {
-        private static final int DEFAULT_KEY_SIZE = 1024;
-        private static final int DEFAULT_CERTAINTY = 20;
+    public static final AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters> EL_GAMAL = new AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters>(
+            EL_GAMAL_NAME) {
+        public static final int DEFAULT_KEY_SIZE = 1024;
+        public static final int DEFAULT_CERTAINTY = 20;
 
         @Override
         public ElGamalEngine getInstance() {
@@ -54,10 +63,11 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
     };
 
-    public static final AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters> NACCACHE_STERN = new AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters>() {
-        private static final int DEFAULT_KEY_SIZE = 1024;
-        private static final int DEFAULT_CERTAINTY = 20;
-        private static final int DEFAULT_SMALL_PRIME_COUNT = 60;
+    public static final AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters> NACCACHE_STERN = new AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters>(
+            NACCACHE_STERN_NAME) {
+        public static final int DEFAULT_KEY_SIZE = 1024;
+        public static final int DEFAULT_CERTAINTY = 20;
+        public static final int DEFAULT_SMALL_PRIME_COUNT = 60;
 
         @Override
         public NaccacheSternEngine getInstance() {
@@ -78,10 +88,11 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
     };
 
-    public static final AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters> RSA = new AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters>() {
-        private static final int DEFAULT_KEY_SIZE = 2048;
-        private static final int DEFAULT_CERTAINTY = 20;
-        private final BigInteger DEFAULT_PUBLIC_EXPONENT = BigInteger.valueOf(0x10001);
+    public static final AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters> RSA = new AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters>(
+            RSA_NAME) {
+        public static final int DEFAULT_KEY_SIZE = 2048;
+        public static final int DEFAULT_CERTAINTY = 20;
+        public final BigInteger DEFAULT_PUBLIC_EXPONENT = BigInteger.valueOf(0x10001);
 
         @Override
         public RSAEngine getInstance() {
@@ -102,7 +113,14 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
     };
 
-    private AsymmetricCipherEnginesClassy() {
+    private final String asymmetricCipherEngineName;
+
+    private AsymmetricCipherEnginesClassy(final String asymmetricCipherEngineName) {
+        this.asymmetricCipherEngineName = asymmetricCipherEngineName;
+    }
+
+    public String name() {
+        return asymmetricCipherEngineName;
     }
 
     public abstract Eingine getInstance();

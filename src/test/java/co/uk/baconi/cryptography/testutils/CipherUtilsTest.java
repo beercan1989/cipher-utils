@@ -1,4 +1,4 @@
-package co.uk.baconi.cryptography.utils;
+package co.uk.baconi.cryptography.testutils;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import co.uk.baconi.cryptography.utils.CipherUtils;
+import co.uk.baconi.cryptography.testutils.CipherUtils;
 
 public class CipherUtilsTest {
 

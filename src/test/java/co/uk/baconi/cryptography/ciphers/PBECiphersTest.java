@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import co.uk.baconi.cryptography.ciphers.pbe.PBECiphers;
-import co.uk.baconi.cryptography.utils.CipherUtils;
+import co.uk.baconi.cryptography.testutils.CipherUtils;
 
 public class PBECiphersTest {
 

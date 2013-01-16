@@ -1,9 +1,9 @@
 package co.uk.baconi.cryptography.ciphers;
 
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCiphers.RSA_PKCS1;
-import static co.uk.baconi.cryptography.utils.CipherUtils.base64EncodedStringToBytes;
-import static co.uk.baconi.cryptography.utils.CipherUtils.byteToString;
-import static co.uk.baconi.cryptography.utils.CipherUtils.stringToByte;
+import static co.uk.baconi.cryptography.testutils.CipherUtils.base64EncodedStringToBytes;
+import static co.uk.baconi.cryptography.testutils.CipherUtils.byteToString;
+import static co.uk.baconi.cryptography.testutils.CipherUtils.stringToByte;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;

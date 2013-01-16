@@ -1,7 +1,7 @@
 package co.uk.baconi.cryptography.ciphers;
 
 import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCiphers.AES;
-import static co.uk.baconi.cryptography.utils.CipherUtils.base64EncodedStringToBytes;
+import static co.uk.baconi.cryptography.testutils.CipherUtils.base64EncodedStringToBytes;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -16,7 +16,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
 
 import co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCiphers;
-import co.uk.baconi.cryptography.utils.CipherUtils;
+import co.uk.baconi.cryptography.testutils.CipherUtils;
 
 public class SymmetricCiphersTest {
 
