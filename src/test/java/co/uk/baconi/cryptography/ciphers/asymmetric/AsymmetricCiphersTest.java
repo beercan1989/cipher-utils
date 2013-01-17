@@ -1,4 +1,4 @@
-package co.uk.baconi.cryptography.ciphers;
+package co.uk.baconi.cryptography.ciphers.asymmetric;
 
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCiphers.RSA_PKCS1;
 import static co.uk.baconi.cryptography.testutils.CipherUtils.base64EncodedStringToBytes;
@@ -14,8 +14,6 @@ import java.io.IOException;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.junit.Test;
-
-import co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCiphers;
 
 public class AsymmetricCiphersTest {
 
@@ -65,4 +63,5 @@ public class AsymmetricCiphersTest {
         assertThat(encrypted, is(not(nullValue())));
         assertThat(encrypted, is(equalTo(encryptedData)));
     }
+
 }

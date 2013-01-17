@@ -23,7 +23,7 @@ import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
  * @deprecated Use {@link AsymmetricCipherEngines} instead.
  */
 @Deprecated
-public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBlockCipher, KeyPairGenerator extends AsymmetricCipherKeyPairGenerator, KeyPairParams extends KeyGenerationParameters> {
+abstract class AsymmetricCipherEnginesClassy<E extends AsymmetricBlockCipher, G extends AsymmetricCipherKeyPairGenerator> {
 
     private static final String RSA_NAME = "RSA";
     private static final String NACCACHE_STERN_NAME = "NaccacheStern";
@@ -34,7 +34,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
 
     private static final Log LOG = LogFactory.getLog(AsymmetricCipherEnginesClassy.class);
 
-    public static final AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters> EL_GAMAL = new AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator, ElGamalKeyGenerationParameters>(
+    public static final AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator> EL_GAMAL = new AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator>(
             EL_GAMAL_NAME) {
         public static final int DEFAULT_KEY_SIZE = 1024;
         public static final int DEFAULT_CERTAINTY = 20;
@@ -45,7 +45,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
 
         @Override
-        public ElGamalKeyPairGenerator getKeyGenerator(final ElGamalKeyGenerationParameters params) {
+        public ElGamalKeyPairGenerator getKeyGenerator(final KeyGenerationParameters params) {
             final ElGamalKeyPairGenerator keyPairGenerator = new ElGamalKeyPairGenerator();
             keyPairGenerator.init(params);
             return keyPairGenerator;
@@ -63,7 +63,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
     };
 
-    public static final AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters> NACCACHE_STERN = new AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator, NaccacheSternKeyGenerationParameters>(
+    public static final AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator> NACCACHE_STERN = new AsymmetricCipherEnginesClassy<NaccacheSternEngine, NaccacheSternKeyPairGenerator>(
             NACCACHE_STERN_NAME) {
         public static final int DEFAULT_KEY_SIZE = 1024;
         public static final int DEFAULT_CERTAINTY = 20;
@@ -75,7 +75,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
 
         @Override
-        public NaccacheSternKeyPairGenerator getKeyGenerator(final NaccacheSternKeyGenerationParameters params) {
+        public NaccacheSternKeyPairGenerator getKeyGenerator(final KeyGenerationParameters params) {
             final NaccacheSternKeyPairGenerator keyPairGenerator = new NaccacheSternKeyPairGenerator();
             keyPairGenerator.init(params);
             return keyPairGenerator;
@@ -88,7 +88,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
     };
 
-    public static final AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters> RSA = new AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator, RSAKeyGenerationParameters>(
+    public static final AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator> RSA = new AsymmetricCipherEnginesClassy<RSAEngine, RSAKeyPairGenerator>(
             RSA_NAME) {
         public static final int DEFAULT_KEY_SIZE = 2048;
         public static final int DEFAULT_CERTAINTY = 20;
@@ -100,7 +100,7 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         }
 
         @Override
-        public RSAKeyPairGenerator getKeyGenerator(final RSAKeyGenerationParameters params) {
+        public RSAKeyPairGenerator getKeyGenerator(final KeyGenerationParameters params) {
             final RSAKeyPairGenerator keyPairGenerator = new RSAKeyPairGenerator();
             keyPairGenerator.init(params);
             return keyPairGenerator;
@@ -123,11 +123,11 @@ public abstract class AsymmetricCipherEnginesClassy<Eingine extends AsymmetricBl
         return asymmetricCipherEngineName;
     }
 
-    public abstract Eingine getInstance();
+    public abstract E getInstance();
 
-    public abstract KeyPairGenerator getKeyGenerator(KeyPairParams params);
+    public abstract G getKeyGenerator(KeyGenerationParameters params);
 
-    public abstract KeyPairGenerator getKeyGenerator();
+    public abstract G getKeyGenerator();
 
     private static SecureRandom getSecureRandom() {
         try {
