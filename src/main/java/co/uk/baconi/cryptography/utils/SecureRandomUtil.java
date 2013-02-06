@@ -11,7 +11,9 @@ public final class SecureRandomUtil {
 
     private static final String SECURE_RANDOM_PROVIDER = "SUN";
     private static final String SECURE_RANDOM_IMPL = "SHA1PRNG";
+
     private static final String UNABLE_TO_GET_WANTED_PROVIDER_MESSAGE = "Unable to find prefered SecureRandom implementation, using potentially bad one";
+
     private static final Log LOG = LogFactory.getLog(AsymmetricCipherEngines.class);
 
     private SecureRandomUtil() {
