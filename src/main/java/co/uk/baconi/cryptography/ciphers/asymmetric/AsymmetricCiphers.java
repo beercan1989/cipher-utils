@@ -8,6 +8,8 @@ import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngin
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricEncodings.PKCS1;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -78,6 +80,11 @@ public final class AsymmetricCiphers {
     public byte[] decrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
             IOException {
         return doCipher(DECRYPT, keyData, messageData);
+    }
+
+    public void generateKeyPair(final byte[] publicKey, final byte[] privateKey) throws NoSuchAlgorithmException,
+            NoSuchProviderException {
+
     }
 
     private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)

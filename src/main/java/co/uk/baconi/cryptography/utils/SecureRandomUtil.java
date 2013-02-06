@@ -5,8 +5,6 @@ import java.security.SecureRandom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines;
-
 public final class SecureRandomUtil {
 
     private static final String SECURE_RANDOM_PROVIDER = "SUN";
@@ -14,7 +12,7 @@ public final class SecureRandomUtil {
 
     private static final String UNABLE_TO_GET_WANTED_PROVIDER_MESSAGE = "Unable to find prefered SecureRandom implementation, using potentially bad one";
 
-    private static final Log LOG = LogFactory.getLog(AsymmetricCipherEngines.class);
+    private static final Log LOG = LogFactory.getLog(SecureRandomUtil.class);
 
     private SecureRandomUtil() {
     }

@@ -11,9 +11,17 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.junit.Test;
+
+import co.uk.baconi.cryptography.testutils.CipherUtils;
 
 public class AsymmetricCiphersTest {
 
@@ -64,4 +72,11 @@ public class AsymmetricCiphersTest {
         assertThat(encrypted, is(equalTo(encryptedData)));
     }
 
+    @Test
+    public void shouldBeAbleToGenerateRsaKeys() throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        final AsymmetricKeyParameter createKey = PrivateKeyFactory.createKey(privateKey);
+        final PrivateKeyInfo instance = PrivateKeyInfo.getInstance(createKey);
+        final byte[] encoded = instance.getEncoded();
+        System.out.println(CipherUtils.bytesToBase64Encoded(encoded));
+    }
 }

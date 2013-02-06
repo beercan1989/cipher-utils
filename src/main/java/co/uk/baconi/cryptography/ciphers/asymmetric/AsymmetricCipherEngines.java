@@ -3,6 +3,8 @@ package co.uk.baconi.cryptography.ciphers.asymmetric;
 import static co.uk.baconi.cryptography.utils.SecureRandomUtil.getSecureRandom;
 
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
 
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
@@ -15,10 +17,12 @@ import org.bouncycastle.crypto.generators.ElGamalParametersGenerator;
 import org.bouncycastle.crypto.generators.NaccacheSternKeyPairGenerator;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.ElGamalKeyGenerationParameters;
+import org.bouncycastle.crypto.params.ElGamalParameters;
 import org.bouncycastle.crypto.params.NaccacheSternKeyGenerationParameters;
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
+import org.bouncycastle.jce.spec.ElGamalParameterSpec;
 
-public enum AsymmetricCipherEngines {
+enum AsymmetricCipherEngines {
     EL_GAMAL {
         private static final int DEFAULT_KEY_SIZE = 1024;
         private static final int DEFAULT_CERTAINTY = 20;
@@ -44,6 +48,23 @@ public enum AsymmetricCipherEngines {
             final ElGamalParametersGenerator paramGenerator = new ElGamalParametersGenerator();
             paramGenerator.init(keySize, certainty, getSecureRandom());
             return new ElGamalKeyGenerationParameters(getSecureRandom(), paramGenerator.generateParameters());
+        }
+
+        public KeyPair generateKeyPair(final int keySize, final int certainty)
+                throws InvalidAlgorithmParameterException {
+            final org.bouncycastle.jcajce.provider.asymmetric.elgamal.KeyPairGeneratorSpi generator = new org.bouncycastle.jcajce.provider.asymmetric.elgamal.KeyPairGeneratorSpi();
+
+            final ElGamalParametersGenerator paramGenerator = new ElGamalParametersGenerator();
+            paramGenerator.init(keySize, certainty, getSecureRandom());
+            final ElGamalParameters generateParameters = paramGenerator.generateParameters();
+            generator.initialize(new ElGamalParameterSpec(generateParameters.getP(), generateParameters.getG()),
+                    getSecureRandom());
+
+            return generator.genKeyPair();
+        }
+
+        public KeyPair generateKeyPair() {
+            return new org.bouncycastle.jcajce.provider.asymmetric.elgamal.KeyPairGeneratorSpi().genKeyPair();
         }
     },
 
@@ -92,6 +113,10 @@ public enum AsymmetricCipherEngines {
         public AsymmetricCipherKeyPairGenerator getKeyGenerator() {
             return getKeyGenerator(new RSAKeyGenerationParameters(DEFAULT_PUBLIC_EXPONENT, getSecureRandom(),
                     DEFAULT_KEY_SIZE, DEFAULT_CERTAINTY));
+        }
+
+        public void getGenerator() {
+            new org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyPairGeneratorSpi();
         }
     };
 
