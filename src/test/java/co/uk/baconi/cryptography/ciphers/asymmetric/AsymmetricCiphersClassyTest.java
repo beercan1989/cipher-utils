@@ -55,7 +55,7 @@ public class AsymmetricCiphersClassyTest {
 
     @Test
     public void shouldBeAbleToDeserialise() throws InvalidCipherTextException, IOException {
-        final AsymmetricCiphers fromString = AsymmetricCiphers.fromString(RSA_PKCS12);
+        final AsymmetricCiphers<?> fromString = AsymmetricCiphers.fromString(RSA_PKCS12);
 
         assertThat(fromString, is(not(nullValue())));
 

@@ -6,10 +6,15 @@ import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngin
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines.NACCACHE_STERN;
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngines.RSA;
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricEncodings.PKCS1;
+import static co.uk.baconi.cryptography.utils.SecureRandomUtil.getSecureRandom;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -17,11 +22,15 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.generators.ElGamalParametersGenerator;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.ElGamalParameters;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.jce.spec.ElGamalParameterSpec;
 
 import co.uk.baconi.cryptography.ciphers.CipherMode;
+import co.uk.baconi.cryptography.utils.SecureRandomUtil;
 
 /**
  * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's lightweight api.<br />
@@ -30,11 +39,14 @@ import co.uk.baconi.cryptography.ciphers.CipherMode;
  * @author JBacon
  * @version 0.0.1-SNAPSHOT
  */
-public final class AsymmetricCiphers {
+public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
 
-    public static final AsymmetricCiphers ELGAMAL_PKCS1 = new AsymmetricCiphers(EL_GAMAL, PKCS1);
-    public static final AsymmetricCiphers NACCACHE_STERN_PKCS1 = new AsymmetricCiphers(NACCACHE_STERN, PKCS1);
-    public static final AsymmetricCiphers RSA_PKCS1 = new AsymmetricCiphers(RSA, PKCS1);
+    public static final AsymmetricCiphers<ElGamalParameterSpec> ELGAMAL_PKCS1 = new AsymmetricCiphers<ElGamalParameterSpec>(
+            EL_GAMAL, PKCS1);
+    public static final AsymmetricCiphers<AlgorithmParameterSpec> NACCACHE_STERN_PKCS1 = new AsymmetricCiphers<AlgorithmParameterSpec>(
+            NACCACHE_STERN, PKCS1);
+    public static final AsymmetricCiphers<RSAKeyGenParameterSpec> RSA_PKCS1 = new AsymmetricCiphers<RSAKeyGenParameterSpec>(
+            RSA, PKCS1);
 
     private static final String TO_STRING_DIVIDER = ";";
     private static final Log LOG = LogFactory.getLog(AsymmetricCiphers.class);
@@ -82,9 +94,51 @@ public final class AsymmetricCiphers {
         return doCipher(DECRYPT, keyData, messageData);
     }
 
-    public void generateKeyPair(final byte[] publicKey, final byte[] privateKey) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    /**
+     * Create a KeyPair using the default parameters for the KeyPairGenerator.
+     * 
+     * @return a new generated KeyPair.
+     */
+    public KeyPair generateKeyPair() {
+        return asymmetricCipherEngine.getKeyPairGenerator().generateKeyPair();
+    }
 
+    /**
+     * Create a KeyPair using custom KeyPairGenerator parameters. If in doubt use {@link #generateKeyPair()}.
+     * 
+     * @param keyGenParams the custom parameters for the KeyPairGenerator.
+     * @return a new generated KeyPair.
+     * @throws InvalidAlgorithmParameterException if the parameters are not supported by the cipher engine.
+     */
+    public KeyPair generateKeyPair(final T keyGenParams) throws InvalidAlgorithmParameterException {
+        final KeyPairGenerator generator = asymmetricCipherEngine.getKeyPairGenerator();
+        generator.initialize(keyGenParams, SecureRandomUtil.getSecureRandom());
+        return generator.generateKeyPair();
+    }
+
+    /**
+     * Create the custom parameters for the RSA KeyPairGenerator.
+     * 
+     * @param keySize the size of they key to generate.
+     * @param publicExponent
+     * @return the generated parameters for the RSA KeyPairGenerator.
+     */
+    public RSAKeyGenParameterSpec generateRsaKeyGenerationParams(final int keySize, final BigInteger publicExponent) {
+        return new RSAKeyGenParameterSpec(keySize, publicExponent);
+    }
+
+    /**
+     * Create the custom parameters for the ElGamal KeyPairGenerator.
+     * 
+     * @param keySize the size of they key to generate.
+     * @param certainty the certainty level that the primes generated are true primes.
+     * @return the generated parameters for the ElGamal KeyPairGenerator.
+     */
+    public ElGamalParameterSpec generateElGamalKeyGenerationParams(final int keySize, final int certainty) {
+        final ElGamalParametersGenerator paramGenerator = new ElGamalParametersGenerator();
+        paramGenerator.init(keySize, certainty, getSecureRandom());
+        final ElGamalParameters generateParameters = paramGenerator.generateParameters();
+        return new ElGamalParameterSpec(generateParameters.getP(), generateParameters.getG());
     }
 
     private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)
@@ -134,7 +188,7 @@ public final class AsymmetricCiphers {
         return toString(this);
     }
 
-    public static String toString(final AsymmetricCiphers asymmetricCipher) {
+    public static <T extends AlgorithmParameterSpec> String toString(final AsymmetricCiphers<T> asymmetricCipher) {
         final StringBuilder toString = new StringBuilder();
         toString.append(asymmetricCipher.asymmetricCipherEngine.name());
         toString.append(TO_STRING_DIVIDER);
@@ -146,7 +200,8 @@ public final class AsymmetricCiphers {
         return string;
     }
 
-    public static AsymmetricCiphers fromString(final String string) {
+    public static <T extends AlgorithmParameterSpec> AsymmetricCiphers<AlgorithmParameterSpec> fromString(
+            final String string) {
         LOG.debug("fromString:" + string);
 
         if (string == null) {
@@ -166,6 +221,6 @@ public final class AsymmetricCiphers {
             throw new IllegalArgumentException();
         }
 
-        return new AsymmetricCiphers(asymmetricCipherEngine, asymmetricEncoder);
+        return new AsymmetricCiphers<AlgorithmParameterSpec>(asymmetricCipherEngine, asymmetricEncoder);
     }
 }

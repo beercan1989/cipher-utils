@@ -1,10 +1,9 @@
 package co.uk.baconi.cryptography.ciphers.asymmetric;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
+import static co.uk.baconi.cryptography.utils.SecureRandomUtil.getSecureRandom;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.math.BigInteger;
+
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
 import org.bouncycastle.crypto.KeyGenerationParameters;
@@ -28,11 +27,6 @@ abstract class AsymmetricCipherEnginesClassy<E extends AsymmetricBlockCipher, G 
     private static final String RSA_NAME = "RSA";
     private static final String NACCACHE_STERN_NAME = "NaccacheStern";
     private static final String EL_GAMAL_NAME = "ElGamal";
-
-    private static final String SECURE_RANDOM_PROVIDER = "SUN";
-    private static final String SECURE_RANDOM_IMPL = "SHA1PRNG";
-
-    private static final Log LOG = LogFactory.getLog(AsymmetricCipherEnginesClassy.class);
 
     public static final AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator> EL_GAMAL = new AsymmetricCipherEnginesClassy<ElGamalEngine, ElGamalKeyPairGenerator>(
             EL_GAMAL_NAME) {
@@ -128,13 +122,4 @@ abstract class AsymmetricCipherEnginesClassy<E extends AsymmetricBlockCipher, G 
     public abstract G getKeyGenerator(KeyGenerationParameters params);
 
     public abstract G getKeyGenerator();
-
-    private static SecureRandom getSecureRandom() {
-        try {
-            return SecureRandom.getInstance(SECURE_RANDOM_IMPL, SECURE_RANDOM_PROVIDER);
-        } catch (final Throwable t) {
-            LOG.error("Unable to find prefered SecureRandom implementation, using potentially bad one", t);
-        }
-        return new SecureRandom();
-    }
 }

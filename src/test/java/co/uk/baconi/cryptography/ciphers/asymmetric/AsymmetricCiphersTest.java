@@ -1,5 +1,6 @@
 package co.uk.baconi.cryptography.ciphers.asymmetric;
 
+import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCiphers.ELGAMAL_PKCS1;
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCiphers.RSA_PKCS1;
 import static co.uk.baconi.cryptography.testutils.CipherUtils.base64EncodedStringToBytes;
 import static co.uk.baconi.cryptography.testutils.CipherUtils.byteToString;
@@ -11,21 +12,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.KeyPair;
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.junit.Test;
-
-import co.uk.baconi.cryptography.testutils.CipherUtils;
 
 public class AsymmetricCiphersTest {
 
-    private static final String RSA_PKCS12 = "RSA;PKCS1";
+    private static final String RSA_PKCS1_AS_STRING = "RSA;PKCS1";
     private static final byte[] messageData = stringToByte("HelloWorld.");
     private static final byte[] encryptedData = base64EncodedStringToBytes("h/dy4VV+/AoViHfzSyvelCCrwBc7m8LCc3JVGIin8QXJAoul6cmHloV1EAx4fzfqWkAbpO4OnRTHdq3ul0a425a/qhtZY4CwjHSyH0U255DX6bhVRU/tDzx1yeBVddbmOSV2WgOFxhkT5vBXZK1ziOZ0hehxHkkH9SsknxxgBRKklXtW4v1hCsfVtSiOxqkTBkZ9K1+vF9efQtxZTs7to1fu66mJiYf2H1yaDJ1i1NI0f9sSsk4h3IuyuYGrHi7NLdJj4z7/AYgJ0qGN3aQoUiA4NSqrJqNmGtlXJqAAa/XMJB82z3XA1Wpr4/UzB3HyfahRmlVZEH1WEGFAOogL8Q==");
 
@@ -50,19 +44,19 @@ public class AsymmetricCiphersTest {
 
     @Test
     public void shouldBeAbleToSerialise() {
-        final String stringOne = AsymmetricCiphers.RSA_PKCS1.toString();
+        final String stringOne = RSA_PKCS1.toString();
         final String stringTwo = AsymmetricCiphers.toString(AsymmetricCiphers.RSA_PKCS1);
 
         assertThat(stringOne, is(not(nullValue())));
-        assertThat(stringOne, is(equalTo(RSA_PKCS12)));
+        assertThat(stringOne, is(equalTo(RSA_PKCS1_AS_STRING)));
 
         assertThat(stringTwo, is(not(nullValue())));
-        assertThat(stringTwo, is(equalTo(RSA_PKCS12)));
+        assertThat(stringTwo, is(equalTo(RSA_PKCS1_AS_STRING)));
     }
 
     @Test
     public void shouldBeAbleToDeserialise() throws InvalidCipherTextException, IOException {
-        final AsymmetricCiphers fromString = AsymmetricCiphers.fromString(RSA_PKCS12);
+        final AsymmetricCiphers<?> fromString = AsymmetricCiphers.fromString(RSA_PKCS1_AS_STRING);
 
         assertThat(fromString, is(not(nullValue())));
 
@@ -73,10 +67,36 @@ public class AsymmetricCiphersTest {
     }
 
     @Test
-    public void shouldBeAbleToGenerateRsaKeys() throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
-        final AsymmetricKeyParameter createKey = PrivateKeyFactory.createKey(privateKey);
-        final PrivateKeyInfo instance = PrivateKeyInfo.getInstance(createKey);
-        final byte[] encoded = instance.getEncoded();
-        System.out.println(CipherUtils.bytesToBase64Encoded(encoded));
+    public void shouldBeAbleToGenerateRsaKeys() throws InvalidCipherTextException, IOException {
+        final KeyPair generateKeyPair = RSA_PKCS1.generateKeyPair();
+
+        assertThat(generateKeyPair, is(not(nullValue())));
+
+        final byte[] publicKey = generateKeyPair.getPublic().getEncoded();
+        final byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
+
+        final byte[] encrypted = RSA_PKCS1.encrypt(privateKey, messageData);
+        assertThat(encrypted, is(not(nullValue())));
+
+        final byte[] decrypted = RSA_PKCS1.decrypt(publicKey, encrypted);
+        assertThat(decrypted, is(not(nullValue())));
+        assertThat(byteToString(decrypted), is(equalTo(byteToString(messageData))));
+    }
+
+    @Test
+    public void shouldBeAbleToGenerateElGamalKeys() throws InvalidCipherTextException, IOException {
+        final KeyPair generateKeyPair = ELGAMAL_PKCS1.generateKeyPair();
+
+        assertThat(generateKeyPair, is(not(nullValue())));
+
+        final byte[] publicKey = generateKeyPair.getPublic().getEncoded();
+        final byte[] privateKey = generateKeyPair.getPrivate().getEncoded();
+
+        final byte[] encrypted = ELGAMAL_PKCS1.encrypt(privateKey, messageData);
+        assertThat(encrypted, is(not(nullValue())));
+
+        final byte[] decrypted = ELGAMAL_PKCS1.decrypt(publicKey, encrypted);
+        assertThat(decrypted, is(not(nullValue())));
+        assertThat(byteToString(decrypted), is(equalTo(byteToString(messageData))));
     }
 }
