@@ -1,7 +1,5 @@
 package co.uk.baconi.cryptography.ciphers;
 
-import java.util.Arrays;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -10,12 +8,13 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.util.encoders.Base64;
 
 import co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines;
 
 public abstract class AbstractCiphers {
 
-    private static final Log LOG = LogFactory.getLog(AbstractCiphers.class);
+    private final Log logger = LogFactory.getLog(getClass());
 
     private final SymmetricCipherEngines symmetricCipherEngine;
 
@@ -25,18 +24,20 @@ public abstract class AbstractCiphers {
 
     protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams)
             throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-        if (LOG.isDebugEnabled()) {
+        // XXX - Remove
+        // TODO - Remove
+        if (logger.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Mode [");
             sb.append(mode);
             sb.append("], Input [");
-            sb.append(Arrays.toString(input));
+            sb.append(new String(Base64.encode(input)));
             sb.append("], Cipher Parameters [");
             sb.append(cipherParams);
             sb.append("], Cipher Engine [");
             sb.append(symmetricCipherEngine);
             sb.append("]");
-            LOG.debug(sb.toString());
+            logger.debug(sb.toString());
         }
 
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(symmetricCipherEngine.getInstance());
@@ -56,16 +57,6 @@ public abstract class AbstractCiphers {
     }
 
     protected static final void validateInputs(final byte[] key, final byte[] input) {
-        if (LOG.isDebugEnabled()) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Key [");
-            sb.append(Arrays.toString(key));
-            sb.append("], Input [");
-            sb.append(Arrays.toString(input));
-            sb.append("]");
-            LOG.debug(sb.toString());
-        }
-
         if (input == null) {
             throw new NullPointerException("Provided cipher input was null.");
         }
@@ -77,20 +68,6 @@ public abstract class AbstractCiphers {
 
     protected static final void validateInputs(final char[] password, final byte[] salt, final byte[] iv,
             final byte[] input) {
-        if (LOG.isDebugEnabled()) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Password [");
-            sb.append(mask(password.length));
-            sb.append("], Salt [");
-            sb.append(Arrays.toString(salt));
-            sb.append("], Initialisation Vector [");
-            sb.append(Arrays.toString(iv));
-            sb.append("], Input [");
-            sb.append(Arrays.toString(input));
-            sb.append("]");
-            LOG.debug(sb.toString());
-        }
-
         if (input == null) {
             throw new NullPointerException("Provided cipher input was null.");
         }
@@ -106,14 +83,6 @@ public abstract class AbstractCiphers {
         if (password == null) {
             throw new NullPointerException("Provided password was null.");
         }
-    }
-
-    private static StringBuilder mask(final long length) {
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            sb.append("*");
-        }
-        return sb;
     }
 
     protected final SymmetricCipherEngines getCipherEngine() {

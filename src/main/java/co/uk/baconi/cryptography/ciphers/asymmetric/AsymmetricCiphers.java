@@ -15,7 +15,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
-import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,12 +27,14 @@ import org.bouncycastle.crypto.params.ElGamalParameters;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.spec.ElGamalParameterSpec;
+import org.bouncycastle.util.encoders.Base64;
 
 import co.uk.baconi.cryptography.ciphers.CipherMode;
 import co.uk.baconi.cryptography.utils.SecureRandomUtil;
 
 /**
- * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's lightweight api.<br />
+ * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's
+ * lightweight api.<br />
  * <br />
  * 
  * @author JBacon
@@ -63,14 +64,21 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     /**
      * Encrypts the message using the provided key.
      * 
-     * @param keyData the encryption key.
-     * @param messageData the message to encrypt.
+     * @param keyData
+     *            the encryption key.
+     * @param messageData
+     *            the message to encrypt.
      * @return the encrypted message.
-     * @throws InvalidCipherTextException - when the data encrypts improperly.
-     * @throws DataLengthException - when the input data is too large for the cipher.
-     * @throws IOException - on an error decoding the key
-     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException
+     *             - when the data encrypts improperly.
+     * @throws DataLengthException
+     *             - when the input data is too large for the cipher.
+     * @throws IOException
+     *             - on an error decoding the key
+     * @throws UnsupportedCipherEngine
+     *             - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder
+     *             - when an unsupported cipher encoder has been used.
      */
     public byte[] encrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
             IOException {
@@ -80,14 +88,21 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     /**
      * Decrypts the message using the provided key.
      * 
-     * @param keyData the decryption key.
-     * @param messageData the message to decrypt.
+     * @param keyData
+     *            the decryption key.
+     * @param messageData
+     *            the message to decrypt.
      * @return the decrypted message.
-     * @throws InvalidCipherTextException - when the data decrypts improperly.
-     * @throws DataLengthException - when the input data is too large for the cipher.
-     * @throws IOException - on an error decoding the key
-     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException
+     *             - when the data decrypts improperly.
+     * @throws DataLengthException
+     *             - when the input data is too large for the cipher.
+     * @throws IOException
+     *             - on an error decoding the key
+     * @throws UnsupportedCipherEngine
+     *             - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder
+     *             - when an unsupported cipher encoder has been used.
      */
     public byte[] decrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
             IOException {
@@ -104,11 +119,14 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     }
 
     /**
-     * Create a KeyPair using custom KeyPairGenerator parameters. If in doubt use {@link #generateKeyPair()}.
+     * Create a KeyPair using custom KeyPairGenerator parameters. If in doubt use
+     * {@link #generateKeyPair()}.
      * 
-     * @param keyGenParams the custom parameters for the KeyPairGenerator.
+     * @param keyGenParams
+     *            the custom parameters for the KeyPairGenerator.
      * @return a new generated KeyPair.
-     * @throws InvalidAlgorithmParameterException if the parameters are not supported by the cipher engine.
+     * @throws InvalidAlgorithmParameterException
+     *             if the parameters are not supported by the cipher engine.
      */
     public KeyPair generateKeyPair(final T keyGenParams) throws InvalidAlgorithmParameterException {
         final KeyPairGenerator generator = asymmetricCipherEngine.getKeyPairGenerator();
@@ -119,7 +137,8 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     /**
      * Create the custom parameters for the RSA KeyPairGenerator.
      * 
-     * @param keySize the size of they key to generate.
+     * @param keySize
+     *            the size of they key to generate.
      * @param publicExponent
      * @return the generated parameters for the RSA KeyPairGenerator.
      */
@@ -130,8 +149,10 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     /**
      * Create the custom parameters for the ElGamal KeyPairGenerator.
      * 
-     * @param keySize the size of they key to generate.
-     * @param certainty the certainty level that the primes generated are true primes.
+     * @param keySize
+     *            the size of they key to generate.
+     * @param certainty
+     *            the certainty level that the primes generated are true primes.
      * @return the generated parameters for the ElGamal KeyPairGenerator.
      */
     public ElGamalParameterSpec generateElGamalKeyGenerationParams(final int keySize, final int certainty) {
@@ -143,12 +164,14 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
 
     private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)
             throws InvalidCipherTextException, IOException {
+        // XXX - Remove
+        // TODO - Remove
         if (LOG.isDebugEnabled()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("Mode [");
             sb.append(mode);
             sb.append("], Key [");
-            sb.append(Arrays.toString(keyData));
+            sb.append(new String(Base64.encode(keyData)));
             sb.append("], Message [");
             sb.append(messageData);
             sb.append("], Cipher Engine [");
