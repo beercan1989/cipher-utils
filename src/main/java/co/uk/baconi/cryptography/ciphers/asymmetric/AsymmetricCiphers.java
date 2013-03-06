@@ -27,14 +27,12 @@ import org.bouncycastle.crypto.params.ElGamalParameters;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.spec.ElGamalParameterSpec;
-import org.bouncycastle.util.encoders.Base64;
 
 import co.uk.baconi.cryptography.ciphers.CipherMode;
 import co.uk.baconi.cryptography.utils.SecureRandomUtil;
 
 /**
- * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's
- * lightweight api.<br />
+ * This class provides easy access to certain Asymmetric Ciphers available in BouncyCastle's lightweight api.<br />
  * <br />
  * 
  * @author JBacon
@@ -119,8 +117,7 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
     }
 
     /**
-     * Create a KeyPair using custom KeyPairGenerator parameters. If in doubt use
-     * {@link #generateKeyPair()}.
+     * Create a KeyPair using custom KeyPairGenerator parameters. If in doubt use {@link #generateKeyPair()}.
      * 
      * @param keyGenParams
      *            the custom parameters for the KeyPairGenerator.
@@ -164,24 +161,6 @@ public final class AsymmetricCiphers<T extends AlgorithmParameterSpec> {
 
     private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)
             throws InvalidCipherTextException, IOException {
-        // XXX - Remove
-        // TODO - Remove
-        if (LOG.isDebugEnabled()) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Mode [");
-            sb.append(mode);
-            sb.append("], Key [");
-            sb.append(new String(Base64.encode(keyData)));
-            sb.append("], Message [");
-            sb.append(messageData);
-            sb.append("], Cipher Engine [");
-            sb.append(asymmetricCipherEngine);
-            sb.append("], Encoder Type[");
-            sb.append(asymmetricEncoder);
-            sb.append("]");
-            LOG.debug(sb.toString());
-        }
-
         if (keyData == null) {
             throw new NullPointerException("Provided cipher key was null.");
         }

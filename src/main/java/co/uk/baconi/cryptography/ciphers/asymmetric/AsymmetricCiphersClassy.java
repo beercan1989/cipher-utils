@@ -8,7 +8,6 @@ import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricCipherEngin
 import static co.uk.baconi.cryptography.ciphers.asymmetric.AsymmetricEncodings.PKCS1;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,14 +48,21 @@ final class AsymmetricCiphersClassy {
     /**
      * Encrypts the message using the provided key.
      * 
-     * @param keyData the encryption key.
-     * @param messageData the message to encrypt.
+     * @param keyData
+     *            the encryption key.
+     * @param messageData
+     *            the message to encrypt.
      * @return the encrypted message.
-     * @throws InvalidCipherTextException - when the data encrypts improperly.
-     * @throws DataLengthException - when the input data is too large for the cipher.
-     * @throws IOException - on an error decoding the key
-     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException
+     *             - when the data encrypts improperly.
+     * @throws DataLengthException
+     *             - when the input data is too large for the cipher.
+     * @throws IOException
+     *             - on an error decoding the key
+     * @throws UnsupportedCipherEngine
+     *             - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder
+     *             - when an unsupported cipher encoder has been used.
      */
     public byte[] encrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
             IOException {
@@ -66,14 +72,21 @@ final class AsymmetricCiphersClassy {
     /**
      * Decrypts the message using the provided key.
      * 
-     * @param keyData the decryption key.
-     * @param messageData the message to decrypt.
+     * @param keyData
+     *            the decryption key.
+     * @param messageData
+     *            the message to decrypt.
      * @return the decrypted message.
-     * @throws InvalidCipherTextException - when the data decrypts improperly.
-     * @throws DataLengthException - when the input data is too large for the cipher.
-     * @throws IOException - on an error decoding the key
-     * @throws UnsupportedCipherEngine - when an unsupported cipher engine has been used.
-     * @throws UnsupportedCipherEncoder - when an unsupported cipher encoder has been used.
+     * @throws InvalidCipherTextException
+     *             - when the data decrypts improperly.
+     * @throws DataLengthException
+     *             - when the input data is too large for the cipher.
+     * @throws IOException
+     *             - on an error decoding the key
+     * @throws UnsupportedCipherEngine
+     *             - when an unsupported cipher engine has been used.
+     * @throws UnsupportedCipherEncoder
+     *             - when an unsupported cipher encoder has been used.
      */
     public byte[] decrypt(final byte[] keyData, final byte[] messageData) throws InvalidCipherTextException,
             IOException {
@@ -82,22 +95,6 @@ final class AsymmetricCiphersClassy {
 
     private byte[] doCipher(final CipherMode mode, final byte[] keyData, final byte[] messageData)
             throws InvalidCipherTextException, IOException {
-        if (LOG.isDebugEnabled()) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Mode [");
-            sb.append(mode);
-            sb.append("], Key [");
-            sb.append(Arrays.toString(keyData));
-            sb.append("], Message [");
-            sb.append(messageData);
-            sb.append("], Cipher Engine [");
-            sb.append(asymmetricCipherEngine);
-            sb.append("], Encoder Type[");
-            sb.append(asymmetricEncoder);
-            sb.append("]");
-            LOG.debug(sb.toString());
-        }
-
         if (keyData == null) {
             throw new NullPointerException("Provided cipher key was null.");
         }
