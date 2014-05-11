@@ -7,6 +7,7 @@ import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA1;
 import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA256;
 import static co.uk.baconi.cryptography.ciphers.pbe.Digests.SHA512;
 import static co.uk.baconi.cryptography.ciphers.pbe.Digests.WHIRLPOOL;
+import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.DES;
 import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.AES_FAST;
 import static co.uk.baconi.cryptography.ciphers.symmetric.SymmetricCipherEngines.TWOFISH;
 
@@ -38,6 +39,8 @@ public final class PBECiphers extends AbstractCiphers {
 
     private static final Log LOG = LogFactory.getLog(PBECiphers.class);
 
+    @Deprecated
+    public static final PBECiphers PBE_MD5_DES_CBC = new PBECiphers(DES, MD5);
     @Deprecated
     public static final PBECiphers PBE_MD5_AES_CBC = new PBECiphers(AES_FAST, MD5);
     @Deprecated
