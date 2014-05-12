@@ -11,6 +11,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.KeyGenerationParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 
+import co.uk.baconi.annotations.VisibleForTesting;
 import co.uk.baconi.cryptography.ciphers.AbstractCiphers;
 import co.uk.baconi.cryptography.ciphers.CipherMode;
 import co.uk.baconi.cryptography.utils.SecureRandomUtil;
@@ -128,5 +129,10 @@ public final class SymmetricCiphers extends AbstractCiphers {
         final CipherKeyGenerator keyGenerator = symmetricCipherEngine.getKeyGenerator();
         keyGenerator.init(new KeyGenerationParameters(SecureRandomUtil.getSecureRandom(), strength));
         return keyGenerator.generateKey();
+    }
+    
+    @VisibleForTesting
+    public CipherKeyGenerator getKeyGenerator() {
+        return symmetricCipherEngine.getKeyGenerator();
     }
 }
