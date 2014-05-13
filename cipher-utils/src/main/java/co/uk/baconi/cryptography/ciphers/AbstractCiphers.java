@@ -1,9 +1,13 @@
 package co.uk.baconi.cryptography.ciphers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.io.CipherOutputStream;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 
@@ -18,19 +22,19 @@ public abstract class AbstractCiphers {
     }
     
     protected final byte[] doCipher(final CipherMode mode, final byte[] input, final CipherParameters cipherParams) throws DataLengthException, IllegalStateException,
-            InvalidCipherTextException {
+            InvalidCipherTextException, IOException {
         final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(symmetricCipherEngine.getInstance());
         final BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(cbcBlockCipher);
         
         cipher.reset();
         cipher.init(mode.isEncrypt(), cipherParams);
         
-        final byte[] outputBuffer = new byte[cipher.getOutputSize(input.length)];
-        int length = cipher.processBytes(input, 0, input.length, outputBuffer, 0);
-        length += cipher.doFinal(outputBuffer, length);
-        
-        final byte[] output = new byte[length];
-        System.arraycopy(outputBuffer, 0, output, 0, length);
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final CipherOutputStream cipherOutputStream = new CipherOutputStream(outputStream, cipher);
+        cipherOutputStream.write(input);
+        cipherOutputStream.flush();
+        cipherOutputStream.close();
+        final byte[] output = outputStream.toByteArray();
         
         return output;
     }

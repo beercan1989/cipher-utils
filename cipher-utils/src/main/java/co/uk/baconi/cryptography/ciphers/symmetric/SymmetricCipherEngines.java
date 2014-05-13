@@ -8,6 +8,7 @@ import org.bouncycastle.crypto.engines.AESLightEngine;
 import org.bouncycastle.crypto.engines.DESEngine;
 import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.generators.DESKeyGenerator;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
 
 public enum SymmetricCipherEngines {
     @Deprecated
@@ -26,7 +27,7 @@ public enum SymmetricCipherEngines {
     AES_FAST {
         @Override
         public BlockCipher getInstance() {
-            return new AESFastEngine();
+            return new CBCBlockCipher(new AESFastEngine());
         }
     },
     

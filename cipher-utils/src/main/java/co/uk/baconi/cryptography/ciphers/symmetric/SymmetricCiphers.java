@@ -3,6 +3,8 @@ package co.uk.baconi.cryptography.ciphers.symmetric;
 import static co.uk.baconi.cryptography.ciphers.CipherMode.DECRYPT;
 import static co.uk.baconi.cryptography.ciphers.CipherMode.ENCRYPT;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.crypto.CipherKeyGenerator;
@@ -55,10 +57,11 @@ public final class SymmetricCiphers extends AbstractCiphers {
      *                if there isn't enough space in out.
      * @exception IllegalStateException
      *                if the cipher isn't initialised.
+     * @throws IOException
      * @exception UnsupportedCipherEngine
      *                if the cipher engine is not currently supported.
      */
-    public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    public final byte[] encrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException, IOException {
         return doCipher(ENCRYPT, key, input);
     }
     
@@ -78,14 +81,16 @@ public final class SymmetricCiphers extends AbstractCiphers {
      *                if there isn't enough space in out.
      * @exception IllegalStateException
      *                if the cipher isn't initialised.
+     * @throws IOException
      * @exception UnsupportedCipherEngine
      *                if the cipher engine is not currently supported.
      */
-    public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    public final byte[] decrypt(final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException, IOException {
         return doCipher(DECRYPT, key, input);
     }
     
-    private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+    private final byte[] doCipher(final CipherMode mode, final byte[] key, final byte[] input) throws DataLengthException, IllegalStateException, InvalidCipherTextException,
+            IOException {
         validateInputs(key, input);
         final KeyParameter keyParameter = new KeyParameter(key);
         return doCipher(mode, input, keyParameter);
