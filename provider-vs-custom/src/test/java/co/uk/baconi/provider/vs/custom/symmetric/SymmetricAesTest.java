@@ -8,10 +8,14 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Permission;
+import java.security.PermissionCollection;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -42,6 +46,8 @@ public class SymmetricAesTest {
     @BeforeClass
     public static void beforeAll() {
         Security.addProvider(BOUNCY_CASTLE);
+        
+        removeCryptographyRestrictions();
     }
     
     @Test
@@ -136,5 +142,50 @@ public class SymmetricAesTest {
     
     private SecretKey toJavaApiProviderKey(final byte[] key) {
         return new SecretKeySpec(key, AES);
+    }
+    
+    private static void removeCryptographyRestrictions() {
+        if (!isRestrictedCryptography()) {
+            System.err.println("Cryptography restrictions removal not needed");
+            return;
+        }
+        
+        try {
+            final Class<?> jceSecurity = Class.forName("javax.crypto.JceSecurity");
+            final Class<?> cryptoPermissions = Class.forName("javax.crypto.CryptoPermissions");
+            final Class<?> cryptoAllPermission = Class.forName("javax.crypto.CryptoAllPermission");
+            
+            final Field isRestrictedField = jceSecurity.getDeclaredField("isRestricted");
+            isRestrictedField.setAccessible(true);
+            isRestrictedField.set(null, false);
+            
+            final Field defaultPolicyField = jceSecurity.getDeclaredField("defaultPolicy");
+            defaultPolicyField.setAccessible(true);
+            final PermissionCollection defaultPolicy = (PermissionCollection) defaultPolicyField.get(null);
+            
+            final Field perms = cryptoPermissions.getDeclaredField("perms");
+            perms.setAccessible(true);
+            ((Map<?, ?>) perms.get(defaultPolicy)).clear();
+            
+            final Field instance = cryptoAllPermission.getDeclaredField("INSTANCE");
+            instance.setAccessible(true);
+            defaultPolicy.add((Permission) instance.get(null));
+            
+            System.err.println("Successfully removed cryptography restrictions.");
+        } catch (final Exception e) {
+            System.err.println("Failed to remove cryptography restrictions [" + e.getMessage() + "].");
+        }
+    }
+    
+    private static boolean isRestrictedCryptography() {
+        try {
+            final Class<?> jceSecurity = Class.forName("javax.crypto.JceSecurity");
+            final Field isRestrictedField = jceSecurity.getDeclaredField("isRestricted");
+            isRestrictedField.setAccessible(true);
+            return isRestrictedField.getBoolean(null);
+        } catch (final Exception e) {
+            System.err.println("Unable to determin if its restricted or not [" + e.getMessage() + "].");
+            return true;
+        }
     }
 }
